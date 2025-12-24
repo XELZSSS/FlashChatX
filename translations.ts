@@ -154,6 +154,9 @@ export const translations = {
     toolSystemTimeTitle: 'System time',
     toolSystemTimeDescription:
       'Get the current system date and time from the server.',
+    toolWebSearchTitle: 'Web search',
+    toolWebSearchDescription:
+      'Search the web and return a concise summary of results.',
     more: 'More',
     tokenCalculator: 'Token Calculator',
     chatImportExport: 'Chat Import/Export',
@@ -222,10 +225,6 @@ export const translations = {
     emojiCategory_holidays_religion: 'Religious Holidays',
     projectDescription:
       'This app only provides API interface configuration for official supplier platforms for chatting. If you encounter an error, use CTRL+SHIFT+I to open the console and view the specific error message, then click the About tab in Settings, find your configured supplier platform, and view the specific error-resolution information.\n\n\nIf you use a provider that auto-switches between thinking/non-thinking models, then when thinking + thinking summary are enabled and you upload a file, the app will switch to a normal model because some thinking models do not support tool/file calls. If you see empty thinking content but a thinking summary is shown, this is not a bug and is expected behavior.',
-    platformProxyHintIntro:
-      'Some API supplier platforms require a proxy (for example: FlClash) to open. Please resolve your proxy setup on your own',
-    platformProxyHintSteps:
-      'How to use the proxy: open FlClash, open the Config button, click the + icon, import your purchased proxy URL, return to the dashboard, choose Rule or Global mode, then click the Play button in the lower right. (Rule mode proxies some app traffic / Global mode proxies all app traffic)',
   },
   简体中文: {
     newChat: '开启新对话',
@@ -373,6 +372,8 @@ export const translations = {
       '读取用户提供的本地文件，并返回可用于分析的文本内容。',
     toolSystemTimeTitle: '系统时间',
     toolSystemTimeDescription: '获取服务器的当前系统日期和时间。',
+    toolWebSearchTitle: '联网搜索',
+    toolWebSearchDescription: '检索网页并返回简要摘要。',
     more: '更多',
     tokenCalculator: 'Token 计算器',
     chatImportExport: '对话导入/导出',
@@ -441,10 +442,6 @@ export const translations = {
     emojiCategory_holidays_religion: '宗教节日',
     projectDescription:
       '本应用只提供官方供应商平台的api接口配置进行聊天，如遇到错误，使用CTRL+SHIFT+I打开控制台查看具体的报错消息，然后点击设置里面的关于标签，找到您配置的供应商平台，查看具体的的错误消息解决办法。\n\n\n如果您使用的是支持自动切换思考/非思考的供应商，在开启思考+思考摘要功能时上传文件会自动切换成普通模型，因为部分思考模型不支持工具/文件调用。如果思考内容为空但显示了思考摘要，这不是BUG，是正常现象。',
-    platformProxyHintIntro:
-      '部分API供应商平台需要魔法代理（例如：FlClash）才能打开，请自行解决魔法代理',
-    platformProxyHintSteps:
-      '魔法代理使用方法：点开FlClash软件，点开配置按钮，点击+号，导入购买的魔法地址URL，返回仪表盘，选择规则/全局模式，点击右下角的播放按钮即可。（规则模式代理部分应用流量/全局模式代理全局应用流量）',
   },
 };
 

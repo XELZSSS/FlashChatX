@@ -53,7 +53,7 @@ export const performSearch = async (
 
     const payload = {
       query: params.query,
-      limit: 5,
+      limit: params.limit ?? 5,
       page: params.page || 1,
       site: params.site || '',
       filetype: params.filetype || '',

@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   buildThinkingBudgetToggle,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
@@ -76,12 +75,13 @@ export const streamMimoResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
   }
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'mimo',
     payload: {
       model: modelToUse,
@@ -100,6 +100,9 @@ export const streamMimoResponse = async function* (params: ServiceParams) {
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };

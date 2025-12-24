@@ -1409,12 +1409,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                       {t('about')}
                     </h3>
                     <PlatformLinks />
-                    <div className="text-subtle text-left">
-                      <div className="space-y-2 text-base leading-relaxed">
-                        <p>{t('platformProxyHintIntro')}</p>
-                        <p>{t('platformProxyHintSteps')}</p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}

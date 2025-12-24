@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   resolveThinkingBudget,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
@@ -134,6 +133,7 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     if (thinkingEnabled) {
@@ -144,7 +144,7 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
     return;
   }
 
-  const rawStream = streamOpenAIStyleChatFromProxy({
+  const rawStream = streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'minimax',
     payload: {
       model: modelToUse,
@@ -163,6 +163,9 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
   if (thinkingEnabled) {

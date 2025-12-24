@@ -15,6 +15,7 @@ export type ToolDefinition = {
 
 export const READ_FILE_TOOL_NAME = 'read_file';
 export const SYSTEM_TIME_TOOL_NAME = 'get_system_time';
+export const WEB_SEARCH_TOOL_NAME = 'web_search';
 
 const TOOL_REGISTRY: Record<string, ToolDefinition> = {
   [READ_FILE_TOOL_NAME]: {
@@ -57,9 +58,54 @@ const TOOL_REGISTRY: Record<string, ToolDefinition> = {
     riskLevel: 'low',
     managedByProxy: true,
   },
+  [WEB_SEARCH_TOOL_NAME]: {
+    name: WEB_SEARCH_TOOL_NAME,
+    title: 'Web search',
+    titleKey: 'toolWebSearchTitle',
+    description: 'Search the web and return a concise summary of results.',
+    descriptionKey: 'toolWebSearchDescription',
+    parameters: {
+      type: 'object',
+      properties: {
+        query: {
+          type: 'string',
+          description: 'Search query.',
+        },
+        site: {
+          type: 'string',
+          description: 'Optional site filter (e.g., example.com).',
+        },
+        filetype: {
+          type: 'string',
+          description: 'Optional filetype filter (e.g., pdf).',
+        },
+        fetch_full: {
+          type: 'boolean',
+          description: 'Whether to fetch full page content if supported.',
+        },
+        timeout_ms: {
+          type: 'integer',
+          description: 'Optional timeout in milliseconds.',
+        },
+        limit: {
+          type: 'integer',
+          description: 'Optional result limit.',
+        },
+        page: {
+          type: 'integer',
+          description: 'Optional page number.',
+        },
+      },
+      required: ['query'],
+    },
+    riskLevel: 'medium',
+  },
 };
 
-export const listTools = (): ToolDefinition[] => Object.values(TOOL_REGISTRY);
+export const listTools = (): ToolDefinition[] =>
+  Object.values(TOOL_REGISTRY).filter(
+    tool => tool.name !== WEB_SEARCH_TOOL_NAME
+  );
 
 export const getToolDefinition = (name: string): ToolDefinition | undefined =>
   TOOL_REGISTRY[name];

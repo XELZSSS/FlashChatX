@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   buildThinkingBudgetToggle,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
@@ -78,12 +77,13 @@ export const streamZIntlResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
   }
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'z-intl',
     payload: {
       model: modelToUse,
@@ -102,6 +102,9 @@ export const streamZIntlResponse = async function* (params: ServiceParams) {
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };
