@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlashChat X</title>
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'unsafe-inline' blob: https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' http://localhost:3000 ws://localhost:3000 http://localhost:8787 ws://localhost:8787 https:; worker-src 'self' blob:; object-src 'none'; base-uri 'self';"
+    />
+    <meta
+      http-equiv="Permissions-Policy"
+      content="interest-cohort=(), join-ad-interest-group=(), run-ad-auction=()"
+    />
+    <link rel="icon" href="./XD.svg" type="image/svg+xml" />
+    <script>
+      // Apply theme immediately to prevent flash
+      (function () {
+        const settings = JSON.parse(
+          localStorage.getItem('ds_settings') || '{}'
+        );
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+        let theme = 'light';
+        if (
+          settings.theme === 'dark' ||
+          (settings.theme === 'system' && mediaQuery.matches)
+        ) {
+          theme = 'dark';
+        }
+
+        const isDarkTheme = theme === 'dark';
+        const bgColor = isDarkTheme ? '#0a0a0a' : '#ffffff';
+
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.backgroundColor = bgColor;
+        document.documentElement.style.colorScheme = isDarkTheme
+          ? 'dark'
+          : 'light';
+
+        // Ensure the first paint uses the correct background color.
+        const bootStyle = document.createElement('style');
+        bootStyle.textContent = `html, body { background-color: ${bgColor}; }`;
+        document.head.appendChild(bootStyle);
+
+        // Update Electron window background to match theme.
+        if (window.electronAPI?.setBackgroundColor) {
+          window.electronAPI.setBackgroundColor(bgColor);
+        }
+      })();
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: 'Inter', sans-serif;
+      }
+      /* Hide scrollbars globally */
+      ::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+      }
+      body {
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="overflow-hidden">
+    <div id="root"></div>
+    <script type="module" src="./index.tsx"></script>
+  </body>
+</html>

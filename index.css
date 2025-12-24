@@ -1,0 +1,882 @@
+:root {
+  --bg: #ffffff;
+  --bg-subtle: #f8fafc;
+  --panel: #ffffff;
+  --panel-strong: #f1f5f9;
+  --border: #e2e8f0;
+  --border-subtle: rgba(30, 41, 59, 0.12);
+  --pill: #f1f5f9;
+  --pill-hover: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
+  --subtle: #94a3b8;
+  --accent: #64748b;
+  --accent-soft: rgba(100, 116, 139, 0.1);
+  --shadow-soft: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+[data-theme='dark'] {
+  --bg: #0a0a0a;
+  --bg-subtle: #141414;
+  --panel: #1a1a1a;
+  --panel-strong: #262626;
+  --border: #2a2a2a;
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --pill: #262626;
+  --pill-hover: #2a2a2a;
+  --text: #f0f0f0;
+  --muted: #b0b0b0;
+  --subtle: #888888;
+  --accent: #a0a0a0;
+  --accent-soft: rgba(160, 160, 160, 0.15);
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+* {
+  box-sizing: border-box;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition:
+    background 100ms ease,
+    color 100ms ease;
+}
+
+/* Prevent sidebar flash on load */
+#root {
+  opacity: 0;
+  transition: opacity 0.1s ease-in;
+}
+
+#root.loaded {
+  opacity: 1;
+}
+
+.app-shell {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.surface {
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.surface-ghost {
+  background: var(--panel-strong);
+  border: 1px solid var(--border-subtle);
+  box-shadow: none;
+}
+
+.pill-btn {
+  background: var(--pill);
+  border: 1px solid var(--border);
+  color: var(--text);
+  transition:
+    background 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    transform 150ms ease;
+}
+
+.pill-btn:hover {
+  background: var(--pill-hover);
+}
+
+.pill-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: #f8fafc;
+}
+
+[data-theme='light'] .pill-active {
+  color: #1e293b;
+}
+
+.shadow-soft {
+  box-shadow: none;
+}
+
+.text-muted {
+  color: var(--muted);
+}
+
+.text-subtle {
+  color: var(--subtle);
+}
+
+.input-shell {
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.input-shell textarea::placeholder {
+  color: var(--subtle);
+}
+
+.input-shell textarea {
+  color: var(--text);
+}
+
+.bubble-user,
+.user-bubble {
+  background: transparent;
+  color: #0b1220;
+}
+
+[data-theme='dark'] .bubble-user,
+[data-theme='dark'] .user-bubble {
+  color: #e8ebf5;
+}
+
+.bubble-ai,
+.bubble-ai .prose,
+.bubble-ai .prose strong {
+  color: var(--text);
+}
+
+.bubble-ai .prose a {
+  color: var(--accent);
+}
+
+.emoji-picker,
+.emoji-button,
+.emoji-text {
+  font-family:
+    'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.nav-active {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+[data-theme='dark'] .nav-active {
+  color: #f4f6fb;
+}
+
+.border-faint {
+  border: 1px solid var(--border);
+}
+
+/* Settings tabs dark adaptation */
+[data-theme='dark'] .settings-tab {
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .settings-tab:hover {
+  color: var(--text);
+}
+
+[data-theme='dark'] .settings-tab.settings-tab-active {
+  color: var(--text);
+}
+
+/* Theme cards & language trigger dark styles */
+[data-theme='dark'] .theme-card {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .theme-card:hover {
+  background: var(--panel-strong);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .theme-card.theme-card-active {
+  background: var(--panel-strong);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.lang-trigger {
+  background: var(--panel-strong);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.lang-option {
+  color: var(--text);
+}
+
+/* Chat page dark adaptation */
+[data-theme='dark'] .chat-input-shell {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .chat-input-shell textarea {
+  color: var(--text);
+}
+
+[data-theme='dark'] .chat-input-shell textarea::placeholder {
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .feature-toggle {
+  background: var(--panel-strong);
+  border-color: var(--border);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.feature-toggle.surface:hover {
+  background: var(--panel-strong);
+}
+
+[data-theme='dark'] .feature-toggle:hover {
+  background: var(--panel);
+}
+
+[data-theme='dark'] .feature-toggle.bg-\[var\(--accent-soft\)\] {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent-soft) !important;
+  color: var(--text) !important;
+}
+
+.send-btn {
+  background: var(--accent);
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+}
+
+.send-btn:disabled {
+  background: var(--accent-soft);
+  color: var(--subtle);
+  box-shadow: none;
+}
+
+[data-theme='dark'] .send-btn:disabled {
+  background: var(--pill);
+  color: var(--subtle);
+  box-shadow: none;
+}
+
+.ai-bubble,
+.ai-bubble .prose,
+.ai-bubble .prose strong {
+  color: var(--text);
+}
+
+.ai-bubble .prose a {
+  color: var(--accent);
+}
+
+/* Remove chat message bubble shadows */
+.user-bubble,
+.ai-bubble {
+  box-shadow: none;
+}
+
+/* Sidebar styles */
+.sidebar-mini {
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+}
+
+.sidebar-mini button {
+  color: var(--subtle);
+}
+
+.sidebar-mini button:hover {
+  background: var(--panel-strong);
+  color: var(--text);
+}
+
+.sidebar-panel {
+  background: var(--panel);
+  border-color: var(--border-subtle);
+  color: var(--text);
+}
+
+[data-theme='light'] .sidebar-panel {
+  background: #f1f5f9;
+}
+
+[data-theme='dark'] .sidebar-panel .text-slate-800,
+[data-theme='dark'] .sidebar-panel .text-slate-700 {
+  color: var(--text);
+}
+
+[data-theme='dark'] .sidebar-panel .text-slate-400 {
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .sidebar-panel .hover\:bg-slate-200:hover {
+  background: var(--panel-strong);
+}
+
+.sidebar-newchat {
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text);
+  box-shadow: none;
+  transition:
+    background-color 100ms ease,
+    border-color 100ms ease,
+    color 100ms ease;
+}
+
+.sidebar-newchat:hover,
+button.sidebar-newchat:hover {
+  background: var(--panel-strong);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .sidebar-newchat {
+  background: var(--panel);
+  border-color: #404040;
+  color: var(--text);
+  box-shadow: none;
+}
+
+[data-theme='dark'] button.sidebar-newchat:hover {
+  background: #333333 !important;
+  border-color: #404040 !important;
+  color: var(--text) !important;
+  box-shadow: none !important;
+}
+
+[data-theme='dark'] .sidebar-item {
+  color: var(--text);
+}
+
+.sidebar-item.active {
+  background: var(--panel);
+  color: var(--text);
+}
+
+[data-theme='dark'] .sidebar-item .text-slate-500 {
+  color: var(--subtle);
+}
+
+.sidebar-menu {
+  background: var(--panel);
+  border-color: var(--border-subtle);
+  box-shadow: none;
+  color: var(--text);
+}
+
+/* Special handling for more menu buttons in dark theme */
+[data-theme='dark'] .sidebar-menu .rename-menu-btn:hover,
+[data-theme='dark'] .sidebar-menu .pin-menu-btn:hover {
+  background: transparent;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .sidebar-menu .delete-menu-btn:hover {
+  background: transparent;
+  color: #f87171;
+}
+
+.sidebar-footer {
+  color: var(--subtle);
+}
+
+.sidebar-footer:hover {
+  background: transparent;
+}
+
+.sidebar-footer .w-5 {
+  color: var(--subtle);
+}
+
+/* Provider settings fields */
+.provider-field {
+  background: var(--panel);
+  border: 1px solid var(--border-subtle);
+  color: var(--text);
+}
+
+[data-theme='dark'] .provider-field {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+  outline: none;
+}
+
+[data-theme='dark'] .provider-field:focus {
+  outline: none;
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .provider-field::placeholder {
+  color: var(--subtle);
+}
+
+/* Streaming output toggle dark theme adaptation */
+[data-theme='dark'] .streaming-toggle-container {
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .streaming-toggle-container .text-slate-800 {
+  color: var(--text);
+}
+
+[data-theme='dark'] .streaming-toggle.bg-slate-300 {
+  background: var(--pill);
+}
+
+[data-theme='dark'] .streaming-toggle.bg-blue-600 {
+  background: var(--accent);
+}
+
+.sidebar-close-btn {
+  color: var(--subtle);
+}
+
+.sidebar-close-btn:hover {
+  background: var(--pill-hover);
+}
+
+[data-theme='dark'] .sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-more-btn {
+  color: var(--subtle);
+}
+
+.sidebar-more-btn:hover,
+.sidebar-more-btn-active {
+  background: transparent;
+}
+
+/* Clear all chats button dark theme adaptation */
+[data-theme='dark'] .text-slate-400.hover\:text-red-600:hover {
+  color: #ef4444;
+}
+
+/* Save and reset buttons dark theme adaptation */
+[data-theme='dark'] .save-btn {
+  background: var(--accent);
+  color: var(--text);
+}
+
+[data-theme='dark'] .save-btn:hover {
+  background: #2563eb;
+}
+
+[data-theme='dark'] .reset-btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .reset-btn:hover {
+  background: var(--panel-strong);
+}
+
+/* Improved typing animation effect */
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--subtle);
+  margin: 0 2px;
+  animation: typingPulse 0.7s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: -0.16s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: -0.08s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes typingPulse {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+/* Typing animation in dark theme */
+[data-theme='dark'] .typing-dot {
+  background: var(--subtle);
+}
+
+/* Confirmation dialog theme adaptation */
+.ConfirmDialog .surface {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+/* Settings dialog (no shadow) */
+.SettingsModal .surface {
+  box-shadow: none;
+}
+
+.SettingsModal .surface-ghost {
+  border: none;
+}
+
+[data-theme='dark'] .ConfirmDialog .surface {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+[data-theme='dark'] .ConfirmDialog .text-muted {
+  color: var(--text);
+}
+
+[data-theme='dark'] .ConfirmDialog .text-subtle {
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .ConfirmDialog button:hover {
+  background: var(--panel-strong);
+}
+
+[data-theme='dark'] .ConfirmDialog button.bg-white {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .ConfirmDialog button.bg-white:hover {
+  background: var(--panel-strong);
+}
+
+/* Rename dialog theme adaptation */
+.RenameDialog .surface {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: var(--shadow-soft);
+  color: var(--text);
+}
+
+[data-theme='dark'] .RenameDialog .text-muted {
+  color: var(--text);
+}
+
+[data-theme='dark'] .RenameDialog .text-subtle {
+  color: var(--subtle);
+}
+
+[data-theme='dark'] .RenameDialog button.bg-white {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .RenameDialog input {
+  background: var(--panel);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+[data-theme='dark'] .RenameDialog input:focus {
+  border-color: var(--border);
+}
+
+[data-theme='dark'] .RenameDialog input::placeholder {
+  color: var(--subtle);
+}
+
+/* SettingsModal close button dark theme adaptation */
+[data-theme='dark'] .absolute.top-4.right-4 button {
+  background: transparent;
+}
+
+[data-theme='dark'] .absolute.top-4.right-4 button:hover {
+  background: var(--panel-strong);
+}
+
+/* Dialog close buttons (X icons) dark theme adaptation */
+[data-theme='dark'] button[class*='rounded-full'][class*='p-1'],
+[data-theme='dark'] button[class*='rounded-full'][class*='p-2'] {
+  background: transparent;
+}
+
+[data-theme='dark'] button[class*='rounded-full'][class*='p-1']:hover,
+[data-theme='dark'] button[class*='rounded-full'][class*='p-2']:hover {
+  background: var(--panel-strong);
+}
+
+/* Toggle thumb styles */
+.toggle-thumb {
+  background: #ffffff;
+}
+
+[data-theme='dark'] .toggle-thumb {
+  background: var(--text);
+}
+
+/* More menu button styles - change icon color instead of background */
+.rename-menu-btn:hover,
+.pin-menu-btn:hover {
+  background: transparent;
+  color: #3b82f6;
+}
+
+.rename-menu-btn:hover .w-3\.5,
+.pin-menu-btn:hover .w-3\.5 {
+  color: #3b82f6;
+}
+
+.delete-menu-btn:hover {
+  background: transparent;
+  color: #dc2626;
+}
+
+.delete-menu-btn:hover .w-3\.5 {
+  color: #dc2626;
+}
+
+/* More menu buttons in dark theme */
+[data-theme='dark'] .rename-menu-btn:hover,
+[data-theme='dark'] .pin-menu-btn:hover {
+  background: transparent;
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .rename-menu-btn:hover .w-3\.5,
+[data-theme='dark'] .pin-menu-btn:hover .w-3\.5 {
+  color: #60a5fa;
+}
+
+[data-theme='dark'] .delete-menu-btn:hover {
+  background: transparent;
+  color: #f87171;
+}
+
+[data-theme='dark'] .delete-menu-btn:hover .w-3\.5 {
+  color: #f87171;
+}
+
+/* Thinking content styles */
+.thinking-section {
+  margin-bottom: 0.125rem;
+}
+
+.thinking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0;
+}
+
+.thinking-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted);
+  user-select: none;
+}
+
+.thinking-title:hover {
+  color: var(--text);
+  transition: color 0.2s ease;
+}
+
+.thinking-content {
+  padding: 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  overflow: hidden;
+  transition:
+    max-height 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}
+
+.thinking-content.collapsed {
+  max-height: 0;
+  opacity: 0;
+}
+
+.thinking-content.expanded {
+  max-height: 500px; /* Adjust based on expected content height */
+  opacity: 1;
+  padding: 0.25rem 0;
+}
+
+.thinking-content .prose {
+  color: var(--muted);
+}
+
+.thinking-content .prose p {
+  margin-bottom: 0.125rem;
+}
+
+.thinking-content .prose p:last-child {
+  margin-bottom: 0;
+}
+
+/* Chevron icon rotation animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Smooth transition for chevron */
+.thinking-title svg {
+  transition: transform 0.2s ease-in-out;
+}
+
+/* Chat card icon hover scale effect */
+.chat-interface .flex.items-center.gap-1.mt-3 button {
+  transition: transform 0.2s ease-in-out;
+}
+
+.chat-interface .flex.items-center.gap-1.mt-3 button:hover {
+  transform: scale(1.2);
+}
+
+.chat-interface {
+  background: var(--bg);
+}
+
+.sidebar-backdrop,
+.SettingsModal,
+.ConfirmDialog,
+.InfoDialog {
+  background-color: rgba(0, 0, 0, 0.28) !important;
+  backdrop-filter: blur(4px) saturate(1.1) !important;
+}
+
+/* Copy success toast animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom title bar */
+.titlebar {
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.75rem;
+  gap: 0.75rem;
+  background: transparent;
+  -webkit-app-region: drag;
+  user-select: none;
+  flex-shrink: 0;
+  width: 100%;
+  margin-left: 0;
+}
+
+.titlebar-drag {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  overflow: hidden;
+}
+
+.titlebar-app {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.titlebar-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0.12);
+}
+
+.titlebar-title {
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+}
+
+.titlebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  color: var(--subtle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+
+.titlebar-btn:hover:not(:disabled) {
+  color: var(--subtle);
+  background: var(--panel-strong);
+}
+
+.titlebar-btn:disabled {
+  color: var(--subtle);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.titlebar-btn svg {
+  stroke: currentColor;
+}
+
+.titlebar-btn-close:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.12);
+}
+
+@media (min-width: 768px) {
+  .titlebar-shifted {
+    margin-left: 0;
+    width: 100%;
+  }
+}
