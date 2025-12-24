@@ -14,10 +14,12 @@ import { parseFileToText } from '../utils/fileParser';
 import type { ToolPermissionConfig } from '../types';
 import {
   getDefaultToolConfig,
-  getToolDefinition,
   getToolDefinitionsByNames,
   READ_FILE_TOOL_NAME,
+  SYSTEM_TIME_TOOL_NAME,
+  WEB_SEARCH_TOOL_NAME,
 } from './toolRegistry';
+import { searchAndFormat } from './searchService';
 
 type HistoryMessage = {
   role: 'user' | 'model';
@@ -536,11 +538,15 @@ const normalizeToolConfig = (config?: ToolPermissionConfig) => {
 
 export const buildOpenAIToolPayload = (
   toolConfig?: ToolPermissionConfig,
-  options?: { managedOnly?: boolean; forceToolName?: string }
+  options?: {
+    managedOnly?: boolean;
+    forceToolName?: string;
+    toolNames?: string[];
+  }
 ) => {
   const normalized = normalizeToolConfig(toolConfig);
   const forceToolName = options?.forceToolName;
-  const enabledToolNames = normalized.enabledToolNames || [];
+  const enabledToolNames = options?.toolNames || normalized.enabledToolNames;
 
   const toolNames = forceToolName
     ? enabledToolNames.includes(forceToolName)
@@ -602,6 +608,67 @@ export const buildOpenAIToolPayload = (
   }
 
   return { tools, tool_choice: 'auto' };
+};
+
+const normalizeOptionalNumber = (value: unknown): number | undefined => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  }
+  return undefined;
+};
+
+const normalizeOptionalBoolean = (value: unknown): boolean | undefined => {
+  if (typeof value === 'boolean') return value;
+  if (value === 'true') return true;
+  if (value === 'false') return false;
+  return undefined;
+};
+
+const getMessageText = (content: string | OpenAIContentPart[]) =>
+  Array.isArray(content)
+    ? content
+        .filter(part => part.type === 'text')
+        .map(part => part.text)
+        .join('')
+    : content;
+
+const getLastUserMessageText = (messages: any[] | undefined): string => {
+  if (!Array.isArray(messages)) return '';
+  for (let i = messages.length - 1; i >= 0; i -= 1) {
+    if (messages[i]?.role !== 'user') continue;
+    const text = getMessageText(messages[i].content || '');
+    if (text) return text;
+  }
+  return '';
+};
+
+const resolveToolNames = (
+  toolConfig: ToolPermissionConfig | undefined,
+  options: {
+    useSearch?: boolean;
+    localAttachments?: LocalAttachment[];
+    lastUserMessageText?: string;
+  }
+) => {
+  const normalized = normalizeToolConfig(toolConfig);
+  let toolNames = normalized.enabledToolNames || [];
+  if (options.useSearch && !toolNames.includes(WEB_SEARCH_TOOL_NAME)) {
+    toolNames = [...toolNames, WEB_SEARCH_TOOL_NAME];
+  }
+  if (!options.useSearch) {
+    toolNames = toolNames.filter(name => name !== WEB_SEARCH_TOOL_NAME);
+  }
+  if (!isTimeQuery(options.lastUserMessageText || '')) {
+    toolNames = toolNames.filter(name => name !== SYSTEM_TIME_TOOL_NAME);
+  }
+  if (!options.localAttachments?.length) {
+    toolNames = toolNames.filter(name => name !== READ_FILE_TOOL_NAME);
+  }
+  return toolNames;
 };
 
 export const streamOpenAIStyleChatFromProxy = async function* (options: {
@@ -687,21 +754,6 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
   }
 };
 
-const buildFileToolDefinition = () => {
-  const tool = getToolDefinition(READ_FILE_TOOL_NAME);
-  if (!tool) {
-    throw new Error('File tool definition not found.');
-  }
-  return {
-    type: 'function',
-    function: {
-      name: tool.name,
-      description: tool.description,
-      parameters: tool.parameters,
-    },
-  };
-};
-
 const findAttachment = (
   attachments: LocalAttachment[],
   args: { file_name?: string; file_id?: string }
@@ -723,15 +775,28 @@ const findAttachment = (
 export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   endpoint: string;
   payload: any;
-  localAttachments: LocalAttachment[];
+  localAttachments?: LocalAttachment[];
   errorMessage?: string;
   toolConfig?: ToolPermissionConfig;
+  useSearch?: boolean;
 }): AsyncGenerator<string> {
-  const { endpoint, payload, localAttachments, errorMessage, toolConfig } =
-    options;
-  const toolDefinition = buildFileToolDefinition();
+  const {
+    endpoint,
+    payload,
+    localAttachments,
+    errorMessage,
+    toolConfig,
+    useSearch,
+  } = options;
+  const attachments = localAttachments || [];
+  const lastUserMessageText = getLastUserMessageText(payload?.messages);
+  const enabledToolNames = resolveToolNames(toolConfig, {
+    useSearch,
+    localAttachments: attachments,
+    lastUserMessageText,
+  });
   const toolPayload = buildOpenAIToolPayload(toolConfig, {
-    forceToolName: READ_FILE_TOOL_NAME,
+    toolNames: enabledToolNames,
   });
   const toolDisabled =
     toolPayload.tool_choice === 'none' ||
@@ -748,11 +813,8 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   const firstResponse = await postProxyJson(endpoint, {
     ...basePayload,
     stream: false,
-    tools: toolPayload.tools ?? [toolDefinition],
-    tool_choice: toolPayload.tool_choice ?? {
-      type: 'function',
-      function: { name: READ_FILE_TOOL_NAME },
-    },
+    tools: toolPayload.tools,
+    tool_choice: toolPayload.tool_choice,
   });
 
   const assistantMessage = firstResponse?.choices?.[0]?.message;
@@ -775,15 +837,39 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
         const args = toolCall?.function?.arguments
           ? JSON.parse(toolCall.function.arguments)
           : {};
-        const attachment = findAttachment(localAttachments, args);
-        if (!attachment) {
-          content = `File not found: ${args.file_name || args.file_id || 'unknown'}`;
+        const toolName = toolCall?.function?.name;
+        if (toolName === READ_FILE_TOOL_NAME) {
+          const attachment = findAttachment(attachments, args);
+          if (!attachment) {
+            content = `File not found: ${args.file_name || args.file_id || 'unknown'}`;
+          } else {
+            content = await parseFileToText(attachment.file);
+          }
+        } else if (toolName === WEB_SEARCH_TOOL_NAME) {
+          const query = typeof args.query === 'string' ? args.query.trim() : '';
+          if (!query) {
+            content = 'Search query is required.';
+          } else {
+            const searchResult = await searchAndFormat({
+              query,
+              site: typeof args.site === 'string' ? args.site : undefined,
+              filetype:
+                typeof args.filetype === 'string' ? args.filetype : undefined,
+              fetch_full: normalizeOptionalBoolean(args.fetch_full),
+              timeout_ms: normalizeOptionalNumber(args.timeout_ms),
+              limit: normalizeOptionalNumber(args.limit),
+              page: normalizeOptionalNumber(args.page),
+            });
+            content = searchResult || 'Search failed.';
+          }
+        } else if (toolName === SYSTEM_TIME_TOOL_NAME) {
+          content = buildSystemTimeToolResult(args?.format);
         } else {
-          content = await parseFileToText(attachment.file);
+          content = `Unsupported tool: ${toolName || 'unknown'}`;
         }
       } catch (error) {
         content =
-          error instanceof Error ? error.message : 'Failed to read attachment.';
+          error instanceof Error ? error.message : 'Tool execution failed.';
       }
 
       return {

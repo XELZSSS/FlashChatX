@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   buildThinkingBudgetToggle,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
@@ -78,12 +77,13 @@ export const streamOpenAICompatibleResponse = async function* (
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
   }
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'openai-compatible',
     payload: {
       model: modelToUse,
@@ -103,6 +103,9 @@ export const streamOpenAICompatibleResponse = async function* (
       }),
       apiUrl: providerConfigResolved.apiUrl,
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };

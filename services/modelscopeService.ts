@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   buildThinkingBudgetToggle,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
@@ -78,12 +77,13 @@ export const streamModelScopeResponse = async function* (
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
   }
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'modelscope',
     payload: {
       model: modelToUse,
@@ -102,6 +102,9 @@ export const streamModelScopeResponse = async function* (
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };

@@ -4,7 +4,6 @@ import {
   buildOpenAIToolPayload,
   buildThinkingBudgetToggle,
   resolveProviderState,
-  streamOpenAIStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 import { BAILING_MODELS } from '../constants';
@@ -90,12 +89,13 @@ export const streamBailingResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: providerConfigResolved.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
   }
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'bailing',
     payload: {
       model: modelToUse,
@@ -114,6 +114,9 @@ export const streamBailingResponse = async function* (params: ServiceParams) {
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };

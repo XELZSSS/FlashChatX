@@ -154,6 +154,9 @@ export const translations = {
     toolSystemTimeTitle: 'System time',
     toolSystemTimeDescription:
       'Get the current system date and time from the server.',
+    toolWebSearchTitle: 'Web search',
+    toolWebSearchDescription:
+      'Search the web and return a concise summary of results.',
     more: 'More',
     tokenCalculator: 'Token Calculator',
     chatImportExport: 'Chat Import/Export',
@@ -373,6 +376,8 @@ export const translations = {
       '读取用户提供的本地文件，并返回可用于分析的文本内容。',
     toolSystemTimeTitle: '系统时间',
     toolSystemTimeDescription: '获取服务器的当前系统日期和时间。',
+    toolWebSearchTitle: '联网搜索',
+    toolWebSearchDescription: '检索网页并返回简要摘要。',
     more: '更多',
     tokenCalculator: 'Token 计算器',
     chatImportExport: '对话导入/导出',

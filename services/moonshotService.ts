@@ -109,6 +109,32 @@ export const streamMoonshotResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: config.toolConfig,
+      useSearch,
+      errorMessage,
+    });
+    return;
+  }
+
+  if (useSearch) {
+    yield* streamOpenAIStyleChatWithLocalFiles({
+      endpoint: 'moonshot',
+      payload: {
+        model: modelToUse,
+        messages: finalMessages,
+        stream: streaming,
+        ...buildThinkingBudgetToggle(
+          useThinking || useDeepThink,
+          thinkingLevel,
+          config.thinkingBudgetTokens
+        ),
+        temperature: config.temperature,
+        top_p: config.showAdvancedParams ? config.topP : undefined,
+        top_k: config.showAdvancedParams ? config.topK : undefined,
+        ...buildOpenAIToolPayload(config.toolConfig, { managedOnly: true }),
+      },
+      localAttachments: params.localAttachments,
+      toolConfig: config.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;

@@ -34,6 +34,7 @@ import {
   LocalAttachment,
   UploadedFileReference,
   ProviderType,
+  ProviderConfig,
 } from './types';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './constants';
 import { LanguageProvider } from './contexts/LanguageContext';
@@ -73,6 +74,17 @@ const DEFAULT_CHAT_CONFIG: ChatConfig = {
   useSearch: false,
   thinkingLevel: 'medium',
 };
+const TOOL_SEARCH_PROVIDERS = new Set<ProviderType>([
+  'openai',
+  'openai-compatible',
+  'bailing',
+  'longcat',
+  'modelscope',
+  'mimo',
+  'minimax',
+  'z',
+  'z-intl',
+]);
 
 const buildHistory = (messages: Message[]) => {
   const filteredMessages = messages.filter(
@@ -1036,26 +1048,36 @@ const AppContent: React.FC<{
     }
   }, []);
 
-  const fetchSearchMessage = useCallback(async (query: string) => {
-    if (!chatConfigRef.current.useSearch || !query.trim()) {
-      return null;
-    }
+  const fetchSearchMessage = useCallback(
+    async (query: string, providerConfig: ProviderConfig) => {
+      if (!chatConfigRef.current.useSearch || !query.trim()) {
+        return null;
+      }
 
-    try {
-      const searchResults = await searchAndFormat({ query });
-      if (!searchResults) return null;
+      const shouldUseToolSearch = TOOL_SEARCH_PROVIDERS.has(
+        providerConfig.provider
+      );
+      if (shouldUseToolSearch) {
+        return null;
+      }
 
-      return {
-        id: generateId(),
-        role: 'user',
-        content: searchResults,
-        timestamp: Date.now(),
-      } satisfies Message;
-    } catch (error) {
-      console.error('搜索错误:', error);
-      return null;
-    }
-  }, []);
+      try {
+        const searchResults = await searchAndFormat({ query });
+        if (!searchResults) return null;
+
+        return {
+          id: generateId(),
+          role: 'user',
+          content: searchResults,
+          timestamp: Date.now(),
+        } satisfies Message;
+      } catch (error) {
+        console.error('搜索错误:', error);
+        return null;
+      }
+    },
+    []
+  );
 
   const buildAttachmentId = useCallback((file: File) => {
     return `${file.name}-${file.size}-${file.lastModified}`;
@@ -1393,7 +1415,7 @@ const AppContent: React.FC<{
         memuEnabled
           ? retrieveMemories(queryInput)
           : Promise.resolve<string[]>([]),
-        fetchSearchMessage(queryInput),
+        fetchSearchMessage(queryInput, providerConfig),
       ]);
 
       let contextMessages: Message[] = [];

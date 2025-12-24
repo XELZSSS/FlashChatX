@@ -91,6 +91,7 @@ export const streamDeepSeekResponse = async function* (params: ServiceParams) {
       },
       localAttachments: attachments,
       toolConfig: config.toolConfig,
+      useSearch,
       errorMessage,
     });
     return;
@@ -109,6 +110,18 @@ export const streamDeepSeekResponse = async function* (params: ServiceParams) {
     top_k: config.showAdvancedParams ? config.topK : undefined,
     ...buildOpenAIToolPayload(config.toolConfig, { managedOnly: true }),
   };
+
+  if (useSearch) {
+    yield* streamOpenAIStyleChatWithLocalFiles({
+      endpoint: 'deepseek',
+      payload,
+      localAttachments: params.localAttachments,
+      toolConfig: config.toolConfig,
+      useSearch,
+      errorMessage,
+    });
+    return;
+  }
 
   const toTokenUsage = (usage?: any): TokenUsage | undefined =>
     usage

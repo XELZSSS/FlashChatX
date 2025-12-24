@@ -4,7 +4,7 @@ import {
   buildOpenAIToolPayload,
   resolveProviderState,
   resolveOpenAIReasoningEffort,
-  streamOpenAIStyleChatFromProxy,
+  streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 
 export const streamOpenAIResponse = async function* (params: ServiceParams) {
@@ -36,7 +36,7 @@ export const streamOpenAIResponse = async function* (params: ServiceParams) {
     providerConfigResolved.thinkingBudgetTokens
   );
 
-  yield* streamOpenAIStyleChatFromProxy({
+  yield* streamOpenAIStyleChatWithLocalFiles({
     endpoint: 'openai',
     payload: {
       model: modelToUse,
@@ -52,6 +52,9 @@ export const streamOpenAIResponse = async function* (params: ServiceParams) {
         managedOnly: true,
       }),
     },
+    localAttachments: params.localAttachments,
+    toolConfig: providerConfigResolved.toolConfig,
+    useSearch,
     errorMessage,
   });
 };
