@@ -1,23 +1,10 @@
 import { ServiceParams } from '../types';
-import {
-  buildFinalMessages,
-  buildOpenAIToolPayload,
-  resolveThinkingBudget,
-  resolveProviderState,
-  streamOpenAIStyleChatWithLocalFiles,
-} from './serviceUtils';
+import { resolveProviderState } from './serviceUtils';
+import { streamOpenAIStyleProvider } from './requestPipeline';
+import { getOpenAIStyleAdapter } from './adapters/registry';
 
 export const streamMiniMaxResponse = async function* (params: ServiceParams) {
-  const {
-    history,
-    message,
-    useThinking,
-    useDeepThink,
-    useSearch,
-    thinkingLevel,
-    errorMessage,
-    providerConfig,
-  } = params;
+  const { providerConfig, useThinking, useDeepThink } = params;
 
   const {
     config,
@@ -25,25 +12,13 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
     streaming,
   } = resolveProviderState(providerConfig);
   const providerConfigResolved = config;
-
-  const thinkingEnabled = useThinking || useDeepThink;
-  const finalMessages = buildFinalMessages({
-    history,
-    message,
-    useThinking,
-    useSearch,
-    showThinkingSummary: providerConfigResolved.showThinkingSummary,
+  const adapter = getOpenAIStyleAdapter(providerConfigResolved.provider)({
+    params,
+    config: providerConfigResolved,
+    model: modelToUse,
+    streaming,
   });
-  const extraBody: any = {};
-  if (thinkingEnabled) {
-    extraBody.extra_body = {
-      reasoning_split: true,
-      thinking_budget: resolveThinkingBudget(
-        thinkingLevel,
-        providerConfigResolved.thinkingBudgetTokens
-      ),
-    };
-  }
+  const thinkingEnabled = useThinking || useDeepThink;
 
   const stripThinkingFromStream = async function* (
     stream: AsyncGenerator<string>
@@ -97,44 +72,11 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
   };
 
   if (params.localAttachments?.length) {
-    const attachments = params.localAttachments;
-    const lastUserIndex = [...finalMessages]
-      .reverse()
-      .findIndex(item => item.role === 'user');
-    if (lastUserIndex !== -1) {
-      const index = finalMessages.length - 1 - lastUserIndex;
-      const fileList = attachments
-        .map(file => `- ${file.file.name} (id: ${file.id})`)
-        .join('\n');
-      finalMessages[index] = {
-        ...finalMessages[index],
-        content: `${finalMessages[index].content}\n\nAttached files:\n${fileList}\n\nPlease call read_file for any file you need.`,
-      };
-    }
-
-    const rawStream = streamOpenAIStyleChatWithLocalFiles({
-      endpoint: 'minimax',
-      payload: {
-        model: modelToUse,
-        messages: finalMessages,
-        stream: streaming,
-        stream_options: { include_usage: true },
-        ...extraBody,
-        temperature: providerConfigResolved.temperature,
-        top_p: providerConfigResolved.showAdvancedParams
-          ? providerConfigResolved.topP
-          : undefined,
-        top_k: providerConfigResolved.showAdvancedParams
-          ? providerConfigResolved.topK
-          : undefined,
-        ...buildOpenAIToolPayload(providerConfigResolved.toolConfig, {
-          managedOnly: true,
-        }),
-      },
-      localAttachments: attachments,
-      toolConfig: providerConfigResolved.toolConfig,
-      useSearch,
-      errorMessage,
+    const rawStream = streamOpenAIStyleProvider({
+      ...adapter,
+      params,
+      config: providerConfigResolved,
+      streaming,
     });
     if (thinkingEnabled) {
       yield* rawStream;
@@ -144,29 +86,11 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
     return;
   }
 
-  const rawStream = streamOpenAIStyleChatWithLocalFiles({
-    endpoint: 'minimax',
-    payload: {
-      model: modelToUse,
-      messages: finalMessages,
-      stream: streaming,
-      stream_options: { include_usage: true },
-      ...extraBody,
-      temperature: providerConfigResolved.temperature,
-      top_p: providerConfigResolved.showAdvancedParams
-        ? providerConfigResolved.topP
-        : undefined,
-      top_k: providerConfigResolved.showAdvancedParams
-        ? providerConfigResolved.topK
-        : undefined,
-      ...buildOpenAIToolPayload(providerConfigResolved.toolConfig, {
-        managedOnly: true,
-      }),
-    },
-    localAttachments: params.localAttachments,
-    toolConfig: providerConfigResolved.toolConfig,
-    useSearch,
-    errorMessage,
+  const rawStream = streamOpenAIStyleProvider({
+    ...adapter,
+    params,
+    config: providerConfigResolved,
+    streaming,
   });
   if (thinkingEnabled) {
     yield* rawStream;

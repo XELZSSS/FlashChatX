@@ -1,21 +1,10 @@
 import { ServiceParams } from '../types';
-import {
-  buildFinalOpenAIMessages,
-  buildOpenAIToolPayload,
-  resolveProviderState,
-  resolveOpenAIReasoningEffort,
-  streamOpenAIStyleChatWithLocalFiles,
-} from './serviceUtils';
+import { resolveProviderState } from './serviceUtils';
+import { streamOpenAIStyleProvider } from './requestPipeline';
+import { getOpenAIStyleAdapter } from './adapters/registry';
 
 export const streamOpenAIResponse = async function* (params: ServiceParams) {
-  const {
-    history,
-    useThinking,
-    useSearch,
-    thinkingLevel,
-    errorMessage,
-    providerConfig,
-  } = params;
+  const { providerConfig } = params;
 
   const {
     config,
@@ -23,38 +12,17 @@ export const streamOpenAIResponse = async function* (params: ServiceParams) {
     streaming,
   } = resolveProviderState(providerConfig);
   const providerConfigResolved = config;
-  const finalMessages = buildFinalOpenAIMessages({
-    history,
-    message: params.message,
-    useThinking,
-    useSearch,
-    showThinkingSummary: providerConfigResolved.showThinkingSummary,
+  const adapter = getOpenAIStyleAdapter(providerConfigResolved.provider)({
+    params,
+    config: providerConfigResolved,
+    model: modelToUse,
+    streaming,
   });
 
-  const reasoningEffort = resolveOpenAIReasoningEffort(
-    thinkingLevel,
-    providerConfigResolved.thinkingBudgetTokens
-  );
-
-  yield* streamOpenAIStyleChatWithLocalFiles({
-    endpoint: 'openai',
-    payload: {
-      model: modelToUse,
-      messages: finalMessages,
-      stream: streaming,
-      stream_options: { include_usage: true },
-      reasoning_effort: useThinking ? reasoningEffort : undefined,
-      temperature: providerConfigResolved.temperature,
-      top_p: providerConfigResolved.showAdvancedParams
-        ? providerConfigResolved.topP
-        : undefined,
-      ...buildOpenAIToolPayload(providerConfigResolved.toolConfig, {
-        managedOnly: true,
-      }),
-    },
-    localAttachments: params.localAttachments,
-    toolConfig: providerConfigResolved.toolConfig,
-    useSearch,
-    errorMessage,
+  yield* streamOpenAIStyleProvider({
+    ...adapter,
+    params,
+    config: providerConfigResolved,
+    streaming,
   });
 };

@@ -3,12 +3,8 @@ import {
   getDefaultModelForProvider,
   loadProviderConfig,
 } from './providerConfig';
-import {
-  TokenUsage,
-  ThinkingLevel,
-  UploadedFileReference,
-  LocalAttachment,
-} from '../types';
+import { TokenUsage, ThinkingLevel, LocalAttachment } from '../types';
+import type { OpenAIContentPart } from './adapters/types';
 import { THINKING_BUDGETS } from '../constants';
 import { parseFileToText } from '../utils/fileParser';
 import type { ToolPermissionConfig } from '../types';
@@ -20,45 +16,6 @@ import {
   WEB_SEARCH_TOOL_NAME,
 } from './toolRegistry';
 import { searchAndFormat } from './searchService';
-
-type HistoryMessage = {
-  role: 'user' | 'model';
-  content: string;
-  attachments?: UploadedFileReference[];
-};
-type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
-type OpenAIContentPart =
-  | { type: 'text'; text: string }
-  | { type: 'file'; file: { file_id: string } };
-
-type SystemMessageOptions = {
-  useThinking: boolean;
-  useSearch: boolean;
-  searchPrompt?: string;
-  showThinkingSummary?: boolean;
-};
-
-export const buildSystemMessages = ({
-  useSearch: _useSearch,
-  showThinkingSummary: _showThinkingSummary,
-}: SystemMessageOptions): ChatMessage[] => {
-  const messages: ChatMessage[] = [];
-  void _useSearch;
-  void _showThinkingSummary;
-  // Core identity prompts have been removed
-
-  return messages;
-};
-
-export const getThinkingSummaryPrompt = (
-  useThinking: boolean,
-  showThinkingSummary?: boolean
-) => {
-  if (!useThinking || !showThinkingSummary) {
-    return '';
-  }
-  return 'After answering, add a short 1-2 sentence summary in <thinking_summary>...</thinking_summary>.';
-};
 
 export const isTimeQuery = (text: string) => {
   if (!text) return false;
@@ -158,174 +115,6 @@ export const buildSystemTimeToolResult = (format?: string) => {
   return JSON.stringify(payload);
 };
 
-const appendPromptToText = (content: string, prompt: string) => {
-  if (!prompt) return content;
-  if (!content.trim()) return prompt;
-  return `${content}\n\n${prompt}`;
-};
-
-const findMatchingUserMessageIndex = (
-  messages: ChatMessage[],
-  message?: string
-) => {
-  if (!message) return -1;
-  const target = message.trim();
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role !== 'user') continue;
-    if (messages[i].content.trim() === target) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-const appendThinkingSummaryPromptToMessages = (
-  messages: ChatMessage[],
-  useThinking: boolean,
-  showThinkingSummary?: boolean,
-  message?: string
-): ChatMessage[] => {
-  const prompt = getThinkingSummaryPrompt(useThinking, showThinkingSummary);
-  if (!prompt) return messages;
-
-  const next = [...messages];
-  const matchedIndex = findMatchingUserMessageIndex(next, message);
-  const targetIndex =
-    matchedIndex !== -1
-      ? matchedIndex
-      : next.map(item => item.role).lastIndexOf('user');
-  if (targetIndex !== -1) {
-    next[targetIndex] = {
-      ...next[targetIndex],
-      content: appendPromptToText(next[targetIndex].content, prompt),
-    };
-    return next;
-  }
-
-  next.push({ role: 'user', content: prompt });
-  return next;
-};
-
-export const mapHistoryToChatMessages = (
-  history: HistoryMessage[],
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _message: string
-): ChatMessage[] => [
-  ...history.map<ChatMessage>(item => ({
-    role: item.role === 'model' ? 'assistant' : 'user',
-    content: item.content || '',
-  })),
-];
-
-const buildOpenAIParts = (
-  content: string,
-  attachments?: UploadedFileReference[]
-): OpenAIContentPart[] => {
-  const parts: OpenAIContentPart[] = [];
-  if (content.trim()) {
-    parts.push({ type: 'text', text: content });
-  }
-
-  attachments
-    ?.filter(item => item.provider === 'openai' && item.fileId)
-    .forEach(item => {
-      parts.push({ type: 'file', file: { file_id: item.fileId } });
-    });
-
-  return parts;
-};
-
-export const mapHistoryToOpenAIMessages = (history: HistoryMessage[]) =>
-  history.map(item => {
-    const parts = buildOpenAIParts(item.content || '', item.attachments);
-    const content = parts.length ? parts : item.content ? item.content : '';
-    return {
-      role: item.role === 'model' ? 'assistant' : 'user',
-      content,
-    };
-  });
-
-export const buildFinalMessages = (options: {
-  history: HistoryMessage[];
-  message: string;
-  useThinking: boolean;
-  useSearch: boolean;
-  showThinkingSummary?: boolean;
-}): ChatMessage[] =>
-  appendThinkingSummaryPromptToMessages(
-    [
-      ...buildSystemMessages({
-        useThinking: options.useThinking,
-        useSearch: options.useSearch,
-        showThinkingSummary: options.showThinkingSummary,
-      }),
-      ...mapHistoryToChatMessages(options.history, options.message),
-    ],
-    options.useThinking,
-    options.showThinkingSummary,
-    options.message
-  );
-
-export const buildFinalOpenAIMessages = (options: {
-  history: HistoryMessage[];
-  message?: string;
-  useThinking: boolean;
-  useSearch: boolean;
-  showThinkingSummary?: boolean;
-}) => {
-  const prompt = getThinkingSummaryPrompt(
-    options.useThinking,
-    options.showThinkingSummary
-  );
-  const messages = [
-    ...buildSystemMessages({
-      useThinking: options.useThinking,
-      useSearch: options.useSearch,
-      showThinkingSummary: options.showThinkingSummary,
-    }),
-    ...mapHistoryToOpenAIMessages(options.history),
-  ];
-
-  if (!prompt) return messages;
-
-  const next = [...messages];
-  const getMessageText = (content: string | OpenAIContentPart[]) =>
-    Array.isArray(content)
-      ? content
-          .filter(part => part.type === 'text')
-          .map(part => part.text)
-          .join('')
-      : content;
-  let targetIndex = -1;
-  if (options.message) {
-    const target = options.message.trim();
-    for (let i = next.length - 1; i >= 0; i -= 1) {
-      if (next[i].role !== 'user') continue;
-      const text = getMessageText(next[i].content).trim();
-      if (text === target) {
-        targetIndex = i;
-        break;
-      }
-    }
-  }
-  if (targetIndex === -1) {
-    targetIndex = next.map(item => item.role).lastIndexOf('user');
-  }
-  if (targetIndex !== -1) {
-    const content = next[targetIndex].content;
-    next[targetIndex] = {
-      ...next[targetIndex],
-      content: Array.isArray(content)
-        ? [...content, { type: 'text', text: `\n\n${prompt}` }]
-        : appendPromptToText(content, prompt),
-    };
-    return next;
-  }
-
-  next.push({ role: 'user', content: prompt });
-  return next;
-};
-
 export const resolveProviderState = (providerConfig?: ProviderConfig) => {
   const resolvedConfig = providerConfig || loadProviderConfig();
   const model =
@@ -393,11 +182,6 @@ export const buildThinkingBudgetToggle = (
     },
   };
 };
-
-export const buildInstructionText = (options: SystemMessageOptions): string =>
-  buildSystemMessages(options)
-    .map(message => message.content)
-    .join(' ');
 
 export const requireApiKey = (key: string | undefined, label: string) => {
   if (!key) {
@@ -474,6 +258,11 @@ export const postProxyJson = async (endpoint: string, payload: unknown) => {
   const response = await fetchProxy(endpoint, payload);
   return response.json();
 };
+
+const extractGoogleResponseText = (data: any): string =>
+  data?.candidates?.[0]?.content?.parts
+    ?.map((part: any) => part.text || '')
+    .join('') || '';
 
 type OpenAIStreamUsage = {
   prompt_tokens?: number;
@@ -741,6 +530,168 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
           yield `__END_THINKING__`;
         }
         yield content;
+      }
+    }
+
+    if (tokenUsage) {
+      yield `__TOKEN_USAGE__${JSON.stringify(tokenUsage)}`;
+    }
+  } catch (error) {
+    const message =
+      errorMessage || (error instanceof Error ? error.message : '');
+    throw new Error(message);
+  }
+};
+
+export const streamGoogleStyleChatFromProxy = async function* (options: {
+  endpoint: string;
+  payload: any;
+  errorMessage?: string;
+}): AsyncGenerator<string> {
+  const { endpoint, payload, errorMessage } = options;
+
+  try {
+    const response = await fetchProxy(endpoint, payload);
+
+    if (!payload?.stream) {
+      const data = await response.json();
+      const content = extractGoogleResponseText(data);
+      if (content) {
+        yield content;
+      }
+      return;
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body from proxy');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let lastText = '';
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') continue;
+
+        try {
+          const parsed = JSON.parse(data);
+          const text = extractGoogleResponseText(parsed);
+          if (!text) continue;
+
+          if (text.startsWith(lastText)) {
+            const delta = text.slice(lastText.length);
+            if (delta) yield delta;
+          } else {
+            yield text;
+          }
+          lastText = text;
+        } catch {
+          // ignore malformed chunks
+        }
+      }
+    }
+  } catch (error) {
+    const message =
+      errorMessage || (error instanceof Error ? error.message : '');
+    throw new Error(message);
+  }
+};
+
+export const streamAnthropicStyleChatFromProxy = async function* (options: {
+  endpoint: string;
+  payload: any;
+  errorMessage?: string;
+}): AsyncGenerator<string> {
+  const { endpoint, payload, errorMessage } = options;
+
+  try {
+    const response = await fetchProxy(endpoint, payload);
+
+    if (!payload?.stream) {
+      const data = await response.json();
+      const content =
+        data?.content
+          ?.filter((block: any) => block.type === 'text')
+          .map((block: any) => block.text)
+          .join('') || '';
+      const usage = data?.usage;
+      if (usage) {
+        const tokenUsage = {
+          prompt_tokens: usage.input_tokens,
+          completion_tokens: usage.output_tokens,
+          total_tokens: (usage.input_tokens || 0) + (usage.output_tokens || 0),
+        };
+        yield `__TOKEN_USAGE__${JSON.stringify(tokenUsage)}`;
+      }
+      if (content) {
+        yield content;
+      }
+      return;
+    }
+
+    const reader = response.body?.getReader();
+    if (!reader) {
+      throw new Error('No response body from proxy');
+    }
+
+    const decoder = new TextDecoder();
+    let buffer = '';
+    let tokenUsage:
+      | {
+          prompt_tokens: number;
+          completion_tokens: number;
+          total_tokens: number;
+        }
+      | undefined;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (!data || data === '[DONE]') continue;
+
+        try {
+          const chunk = JSON.parse(data);
+          if (
+            chunk.type === 'content_block_delta' &&
+            chunk.delta?.type === 'text_delta'
+          ) {
+            const content = chunk.delta.text;
+            if (content) yield content;
+          } else if (chunk.type === 'message_delta') {
+            if (chunk.usage) {
+              tokenUsage = {
+                prompt_tokens: chunk.usage.input_tokens || 0,
+                completion_tokens: chunk.usage.output_tokens || 0,
+                total_tokens:
+                  (chunk.usage.input_tokens || 0) +
+                  (chunk.usage.output_tokens || 0),
+              };
+            }
+          }
+        } catch {
+          // ignore malformed chunks
+        }
       }
     }
 
