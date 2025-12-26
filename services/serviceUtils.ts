@@ -17,6 +17,38 @@ import {
 } from './toolRegistry';
 import { searchAndFormat } from './searchService';
 
+type OpenAIResponseReasoningDetail = { text?: string };
+type OpenAIResponseMessage = {
+  content?: string;
+  reasoning_content?: string;
+  reasoning_details?: OpenAIResponseReasoningDetail[];
+  tool_calls?: OpenAIToolCall[];
+};
+type OpenAIResponseChoice = {
+  message?: OpenAIResponseMessage;
+  delta?: OpenAIResponseMessage;
+};
+type OpenAIResponse = {
+  choices?: OpenAIResponseChoice[];
+  usage?: OpenAIStreamUsage;
+};
+type OpenAIProxyPayload = {
+  stream?: boolean;
+  messages?: Array<{ role?: string; content?: string | OpenAIContentPart[] }>;
+  stream_options?: unknown;
+};
+type OpenAIToolCall = {
+  id: string;
+  function?: { name?: string; arguments?: string };
+};
+type GoogleResponse = {
+  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
+};
+type AnthropicResponse = {
+  content?: Array<{ type?: string; text?: string }>;
+  usage?: { input_tokens?: number; output_tokens?: number };
+};
+
 export const isTimeQuery = (text: string) => {
   if (!text) return false;
   const normalized = text.toLowerCase();
@@ -203,9 +235,20 @@ export const withRetry = async <T>(
       return await fn();
     } catch (error) {
       lastError = error as Error;
-      const message = String((error as any)?.message || '');
-      const status: number | undefined =
-        (error as any)?.status || (error as any)?.response?.status || undefined;
+      const message =
+        error instanceof Error ? error.message : String(error || '');
+      const status = (() => {
+        if (!error || typeof error !== 'object') return undefined;
+        const candidate = error as {
+          status?: unknown;
+          response?: { status?: unknown };
+        };
+        if (typeof candidate.status === 'number') return candidate.status;
+        if (typeof candidate.response?.status === 'number') {
+          return candidate.response.status;
+        }
+        return undefined;
+      })();
 
       const retryable =
         status === 429 ||
@@ -259,10 +302,9 @@ export const postProxyJson = async (endpoint: string, payload: unknown) => {
   return response.json();
 };
 
-const extractGoogleResponseText = (data: any): string =>
-  data?.candidates?.[0]?.content?.parts
-    ?.map((part: any) => part.text || '')
-    .join('') || '';
+const extractGoogleResponseText = (data: GoogleResponse): string =>
+  data.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('') ||
+  '';
 
 type OpenAIStreamUsage = {
   prompt_tokens?: number;
@@ -285,7 +327,7 @@ const toTokenUsage = (usage?: OpenAIStreamUsage): TokenUsage | undefined =>
 
 const readOpenAISSE = async function* (
   response: Response
-): AsyncGenerator<any> {
+): AsyncGenerator<OpenAIResponse> {
   const reader = response.body?.getReader();
   if (!reader) {
     throw new Error('No response body from proxy');
@@ -425,7 +467,11 @@ const getMessageText = (content: string | OpenAIContentPart[]) =>
         .join('')
     : content;
 
-const getLastUserMessageText = (messages: any[] | undefined): string => {
+const getLastUserMessageText = (
+  messages:
+    | Array<{ role?: string; content?: string | OpenAIContentPart[] }>
+    | undefined
+): string => {
   if (!Array.isArray(messages)) return '';
   for (let i = messages.length - 1; i >= 0; i -= 1) {
     if (messages[i]?.role !== 'user') continue;
@@ -462,7 +508,7 @@ const resolveToolNames = (
 
 export const streamOpenAIStyleChatFromProxy = async function* (options: {
   endpoint: string;
-  payload: any;
+  payload: OpenAIProxyPayload;
   errorMessage?: string;
 }): AsyncGenerator<string> {
   const { endpoint, payload, errorMessage } = options;
@@ -471,13 +517,13 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
     const response = await fetchProxy(endpoint, payload);
 
     if (!payload?.stream) {
-      const data = await response.json();
-      const messageData = data.choices?.[0]?.message as any;
+      const data = (await response.json()) as OpenAIResponse;
+      const messageData = data.choices?.[0]?.message;
       const content = messageData?.content || '';
       const reasoningContent =
         messageData?.reasoning_content ||
         (Array.isArray(messageData?.reasoning_details)
-          ? (messageData.reasoning_details[0]?.text as string | undefined) || ''
+          ? messageData.reasoning_details[0]?.text || ''
           : '');
 
       const usage = toTokenUsage(data.usage);
@@ -502,12 +548,12 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
 
     for await (const parsed of readOpenAISSE(response)) {
       tokenUsage = toTokenUsage(parsed.usage) || tokenUsage;
-      const delta = parsed.choices?.[0]?.delta as any;
+      const delta = parsed.choices?.[0]?.delta;
       if (!delta) continue;
 
-      const reasoningContent = delta.reasoning_content as string | undefined;
-      const reasoningDetails = delta.reasoning_details as any[] | undefined;
-      const content = delta.content as string | undefined;
+      const reasoningContent = delta.reasoning_content;
+      const reasoningDetails = delta.reasoning_details;
+      const content = delta.content;
 
       if (reasoningContent) {
         hasThinking = true;
@@ -516,7 +562,7 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
       }
 
       if (reasoningDetails && Array.isArray(reasoningDetails)) {
-        const text = reasoningDetails[0]?.text as string | undefined;
+        const text = reasoningDetails[0]?.text;
         if (text) {
           hasThinking = true;
           yield `__THINKING__${text}`;
@@ -545,7 +591,7 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
 
 export const streamGoogleStyleChatFromProxy = async function* (options: {
   endpoint: string;
-  payload: any;
+  payload: { stream?: boolean } & Record<string, unknown>;
   errorMessage?: string;
 }): AsyncGenerator<string> {
   const { endpoint, payload, errorMessage } = options;
@@ -611,7 +657,7 @@ export const streamGoogleStyleChatFromProxy = async function* (options: {
 
 export const streamAnthropicStyleChatFromProxy = async function* (options: {
   endpoint: string;
-  payload: any;
+  payload: { stream?: boolean } & Record<string, unknown>;
   errorMessage?: string;
 }): AsyncGenerator<string> {
   const { endpoint, payload, errorMessage } = options;
@@ -620,13 +666,13 @@ export const streamAnthropicStyleChatFromProxy = async function* (options: {
     const response = await fetchProxy(endpoint, payload);
 
     if (!payload?.stream) {
-      const data = await response.json();
+      const data = (await response.json()) as AnthropicResponse;
       const content =
-        data?.content
-          ?.filter((block: any) => block.type === 'text')
-          .map((block: any) => block.text)
+        data.content
+          ?.filter(block => block.type === 'text')
+          .map(block => block.text || '')
           .join('') || '';
-      const usage = data?.usage;
+      const usage = data.usage;
       if (usage) {
         const tokenUsage = {
           prompt_tokens: usage.input_tokens,
@@ -725,7 +771,7 @@ const findAttachment = (
 
 export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   endpoint: string;
-  payload: any;
+  payload: OpenAIProxyPayload;
   localAttachments?: LocalAttachment[];
   errorMessage?: string;
   toolConfig?: ToolPermissionConfig;
@@ -740,7 +786,7 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
     useSearch,
   } = options;
   const attachments = localAttachments || [];
-  const lastUserMessageText = getLastUserMessageText(payload?.messages);
+  const lastUserMessageText = getLastUserMessageText(payload.messages);
   const enabledToolNames = resolveToolNames(toolConfig, {
     useSearch,
     localAttachments: attachments,
@@ -761,14 +807,14 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   const basePayload = { ...(payload || {}) };
   delete basePayload.stream_options;
 
-  const firstResponse = await postProxyJson(endpoint, {
+  const firstResponse = (await postProxyJson(endpoint, {
     ...basePayload,
     stream: false,
     tools: toolPayload.tools,
     tool_choice: toolPayload.tool_choice,
-  });
+  })) as OpenAIResponse;
 
-  const assistantMessage = firstResponse?.choices?.[0]?.message;
+  const assistantMessage = firstResponse.choices?.[0]?.message;
   const toolCalls = assistantMessage?.tool_calls || [];
 
   if (!toolCalls.length) {
@@ -782,7 +828,7 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   }
 
   const toolResults = await Promise.all(
-    toolCalls.map(async (toolCall: any) => {
+    toolCalls.map(async (toolCall: OpenAIToolCall) => {
       let content = '';
       try {
         const args = toolCall?.function?.arguments
@@ -831,7 +877,8 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
     })
   );
 
-  const messages = [...payload.messages, assistantMessage, ...toolResults];
+  const baseMessages = payload.messages || [];
+  const messages = [...baseMessages, assistantMessage, ...toolResults];
 
   yield* streamOpenAIStyleChatFromProxy({
     endpoint,

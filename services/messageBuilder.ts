@@ -9,6 +9,10 @@ type ChatMessage = { role: 'user' | 'assistant' | 'system'; content: string };
 type OpenAIContentPart =
   | { type: 'text'; text: string }
   | { type: 'file'; file: { file_id: string } };
+type OpenAIMessage = {
+  role: 'user' | 'assistant' | 'system';
+  content: string | OpenAIContentPart[];
+};
 
 type SystemMessageOptions = {
   useThinking: boolean;
@@ -116,7 +120,9 @@ const buildOpenAIParts = (
   return parts;
 };
 
-export const mapHistoryToOpenAIMessages = (history: HistoryMessage[]) =>
+export const mapHistoryToOpenAIMessages = (
+  history: HistoryMessage[]
+): OpenAIMessage[] =>
   history.map(item => {
     const parts = buildOpenAIParts(item.content || '', item.attachments);
     const content = parts.length ? parts : item.content ? item.content : '';
@@ -153,7 +159,7 @@ export const buildFinalOpenAIMessages = (options: {
   useThinking: boolean;
   useSearch: boolean;
   showThinkingSummary?: boolean;
-}) => {
+}): OpenAIMessage[] => {
   const prompt = getThinkingSummaryPrompt(
     options.useThinking,
     options.showThinkingSummary
@@ -207,7 +213,7 @@ export const buildFinalOpenAIMessages = (options: {
   return next;
 };
 
-type TextMessage = { role: string; content: string };
+type TextMessage = { role: string; content: string | OpenAIContentPart[] };
 
 const buildAttachmentPrompt = (attachments: LocalAttachment[]) => {
   const fileList = attachments
@@ -228,9 +234,13 @@ export const injectAttachmentPrompt = <T extends TextMessage>(
     return [...next, { role: 'user', content: prompt } as T];
   }
   const target = next[targetIndex];
+  const appendPrompt = (content: string | OpenAIContentPart[]) =>
+    Array.isArray(content)
+      ? [...content, { type: 'text', text: `\n\n${prompt}` }]
+      : appendPromptToText(content || '', prompt);
   next[targetIndex] = {
     ...target,
-    content: appendPromptToText(target.content || '', prompt),
+    content: appendPrompt(target.content),
   };
   return next;
 };
