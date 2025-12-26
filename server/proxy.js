@@ -15,7 +15,7 @@ import {
   handleStreamResponse,
 } from './proxy/middleware.js';
 import { ENV_PATH, getEnvValue, persistEnvUpdates } from './proxy/env.js';
-import { createRouter } from './proxy/routes.js';
+import { createRouter } from './proxy/router.js';
 
 const PORT = process.env.PROXY_PORT || 8787;
 const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
