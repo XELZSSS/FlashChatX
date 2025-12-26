@@ -1,3 +1,4 @@
+// Hooks
 import React, {
   useState,
   useRef,
@@ -5,6 +6,7 @@ import React, {
   useCallback,
   useMemo,
 } from 'react';
+// Icons
 import {
   X,
   User,
@@ -13,14 +15,12 @@ import {
   Monitor,
   Moon,
   Sun,
-  Check,
-  ChevronDown,
   Cloud,
-  Trash2,
   Brain,
   Calculator,
   Wrench,
 } from 'lucide-react';
+// Types
 import type { ProviderType } from '../types';
 import {
   Theme,
@@ -28,8 +28,11 @@ import {
   MemuSettings,
   ToolChoiceMode,
 } from '../types';
-import { SUPPORTED_LANGUAGES, MEMU_DEFAULTS } from '../constants';
+// Constants
+import { SUPPORTED_LANGUAGES } from '../constants';
+// Contexts
 import { useTranslation } from '../contexts/useTranslation';
+// Services
 import {
   loadProviderConfig,
   saveProviderConfig,
@@ -43,7 +46,13 @@ import {
   getDefaultToolConfig,
   ToolDefinition,
 } from '../services/toolRegistry';
-import PlatformLinks from './PlatformLinks';
+// Components
+import AboutTab from './settings/tabs/AboutTab';
+import DataTab from './settings/tabs/DataTab';
+import GeneralTab from './settings/tabs/GeneralTab';
+import MemoryTab from './settings/tabs/MemoryTab';
+import ProviderTab from './settings/tabs/ProviderTab';
+import ToolsTab from './settings/tabs/ToolsTab';
 
 interface SettingsModalProps {
   readonly isOpen: boolean;
@@ -692,740 +701,94 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           <div className="flex-1 overflow-y-auto p-6 pr-0 md:p-10 md:pr-0">
             <div className="mx-auto w-full max-w-2xl">
               {activeTab === 'general' && (
-                <div className="space-y-8 md:space-y-10 max-w-xl">
-                  {/* Theme Section */}
-                  <div className="space-y-4">
-                    <label className="block text-base text-subtle">
-                      {t('theme')}
-                    </label>
-                    <div className="grid grid-cols-3 gap-3 md:gap-4">
-                      {themeOptions.map(themeOption => {
-                        const Icon = themeOption.icon;
-                        const isActive = settings.theme === themeOption.value;
-                        return (
-                          <button
-                            key={themeOption.value}
-                            onClick={() => handleThemeChange(themeOption.value)}
-                            className={`theme-card flex flex-col items-center justify-center py-3 md:py-5 px-2 rounded-2xl border transition-all duration-200 gap-2 md:gap-3 ${
-                              isActive
-                                ? 'border-[var(--border)] bg-[var(--panel-strong)] text-text ring-1 ring-slate-400/20 theme-card-active'
-                                : 'border surface text-subtle hover:border hover:bg-[var(--panel-strong)]'
-                            }`}
-                          >
-                            <Icon className="w-5 h-5 md:w-6 md:h-6" />
-                            <span className="text-sm md:text-base font-medium">
-                              {themeOption.label}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Language Section */}
-                  <div className="space-y-4 relative z-20">
-                    <label className="block text-base text-subtle">
-                      {t('language')}
-                    </label>
-                    <div className="relative w-full sm:w-64">
-                      <button
-                        onClick={() => toggleDropdown('language')}
-                        className="lang-trigger w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-base font-medium transition-colors"
-                      >
-                        <span>{settings.language}</span>
-                        <ChevronDown
-                          className={`w-4 h-4 text-subtle transition-transform duration-200 ${dropdownStates.language ? 'rotate-180' : ''}`}
-                        />
-                      </button>
-
-                      {dropdownStates.language && (
-                        <div className="absolute top-full right-0 mt-2 w-64 surface rounded-xl shadow-soft border-faint max-h-60 md:max-h-80 overflow-y-auto overflow-x-hidden py-1.5 scrollbar-thin z-50">
-                          {SUPPORTED_LANGUAGES.map(lang => {
-                            const isSelected = settings.language === lang;
-                            return (
-                              <button
-                                key={lang}
-                                onClick={() => {
-                                  handleLanguageChange(lang);
-                                  closeDropdown('language');
-                                }}
-                                className="lang-option w-full flex items-center justify-between px-4 py-2.5 text-left text-base hover:bg-[var(--panel-strong)] transition-colors text-text"
-                              >
-                                <span>{lang}</span>
-                                {isSelected && (
-                                  <Check className="w-4 h-4 text-muted" />
-                                )}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                <GeneralTab
+                  t={t}
+                  settings={settings}
+                  themeOptions={themeOptions}
+                  supportedLanguages={SUPPORTED_LANGUAGES}
+                  dropdownStates={{ language: dropdownStates.language }}
+                  languageRef={languageRef}
+                  toggleDropdown={toggleDropdown}
+                  closeDropdown={closeDropdown}
+                  handleThemeChange={handleThemeChange}
+                  handleLanguageChange={handleLanguageChange}
+                />
               )}
 
               {activeTab === 'provider' && (
-                <div className="space-y-6 max-w-xl">
-                  <div className="space-y-2 relative z-20" ref={providerRef}>
-                    <label className="block text-sm text-subtle">
-                      {t('provider')}
-                    </label>
-                    <button
-                      onClick={() => toggleDropdown('provider')}
-                      className="lang-trigger w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
-                    >
-                      <span>{activeProviderLabel}</span>
-                      <ChevronDown
-                        className={`w-4 h-4 text-subtle transition-transform duration-200 ${dropdownStates.provider ? 'rotate-180' : ''}`}
-                      />
-                    </button>
-
-                    {dropdownStates.provider && (
-                      <div className="absolute top-full right-0 mt-2 w-full surface rounded-xl shadow-soft border-faint max-h-60 overflow-y-auto overflow-x-hidden py-1.5 scrollbar-thin z-50">
-                        {providerOptions.map(option => (
-                          <button
-                            key={option.id}
-                            className="lang-option w-full flex items-center justify-between px-4 py-2.5 text-left text-sm hover:bg-[var(--panel-strong)] transition-colors text-text"
-                            onClick={() => handleProviderChange(option.id)}
-                          >
-                            <span>{option.label}</span>
-                            {providerConfig.provider === option.id && (
-                              <Check className="w-4 h-4 text-muted" />
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm text-subtle">
-                      {t('apiKey')}
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        className="provider-field w-full rounded-xl border px-4 py-2.5 pr-12 text-sm focus:outline-none"
-                        placeholder="API Key"
-                        value={providerConfig.apiKey}
-                        onChange={handleApiKeyChange}
-                      />
-                      <button
-                        type="button"
-                        onClick={handleClearApiKey}
-                        className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-md hover:bg-[var(--panel-strong)] text-subtle hover:text-muted transition-colors"
-                        title={t('clearApiKey')}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="block text-sm text-subtle">
-                      {t('modelName')}
-                    </label>
-                    <input
-                      type="text"
-                      className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                      placeholder={getDefaultModelForProvider(
-                        providerConfig.provider
-                      )}
-                      value={providerConfig.model}
-                      onChange={handleModelChange}
-                    />
-                  </div>
-
-                  {/* API URL field for OpenAI Compatible provider */}
-                  {providerConfig.provider === 'openai-compatible' && (
-                    <div className="space-y-2">
-                      <label className="block text-sm text-subtle">
-                        {t('apiUrl')}
-                      </label>
-                      <input
-                        type="text"
-                        className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                        placeholder={t('apiUrlPlaceholder')}
-                        value={providerConfig.apiUrl || ''}
-                        onChange={handleApiUrlChange}
-                      />
-                    </div>
-                  )}
-
-                  <div className="space-y-2">
-                    <label className="block text-sm text-subtle">
-                      {t('temperature')}
-                    </label>
-                    <input
-                      type="text"
-                      className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                      placeholder="0.0"
-                      value={temperatureInput}
-                      onChange={handleTemperatureChange}
-                    />
-                  </div>
-
-                  {supportsAdvancedParams && (
-                    <div className="streaming-toggle-container flex items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">
-                      <div className="flex-1">
-                        <label className="block text-sm text-text font-medium">
-                          {t('advancedParams')}
-                        </label>
-                        <p className="text-xs text-subtle mt-1">
-                          {t('advancedParamsHint')}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={handleToggleAdvancedParams}
-                        className={`streaming-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                          providerConfig.showAdvancedParams
-                            ? 'bg-[var(--accent)]'
-                            : 'bg-[var(--pill)]'
-                        }`}
-                        aria-pressed={!!providerConfig.showAdvancedParams}
-                        aria-label={t('advancedParams')}
-                      >
-                        <span
-                          className={`streaming-toggle-thumb inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                            providerConfig.showAdvancedParams
-                              ? 'translate-x-5'
-                              : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  )}
-
-                  {supportsAdvancedParams &&
-                    providerConfig.showAdvancedParams && (
-                      <div className="space-y-2">
-                        {activeAdvancedSupport?.topP && (
-                          <div className="space-y-2">
-                            <label className="block text-sm text-subtle">
-                              {t('topP')}
-                            </label>
-                            <input
-                              type="text"
-                              className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                              placeholder="0.0"
-                              value={topPInput}
-                              onChange={handleTopPChange}
-                            />
-                          </div>
-                        )}
-                        {activeAdvancedSupport?.topK && (
-                          <div className="space-y-2">
-                            <label className="block text-sm text-subtle">
-                              {t('topK')}
-                            </label>
-                            <input
-                              type="text"
-                              className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                              placeholder="0"
-                              value={topKInput}
-                              onChange={handleTopKChange}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    )}
-
-                  <div className="streaming-toggle-container flex items-start justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">
-                    <div className="flex-1">
-                      <label className="block text-sm text-text font-medium">
-                        {t('showThinkingSummary')}
-                      </label>
-                      <div className="mt-3 space-y-2">
-                        <label className="block text-sm text-subtle">
-                          {t('thinkingBudget')}
-                        </label>
-                        <input
-                          type="text"
-                          className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-                          placeholder={t('thinkingBudgetPlaceholder')}
-                          value={thinkingBudgetInput}
-                          onChange={handleThinkingBudgetChange}
-                        />
-                        <p className="text-xs text-subtle">
-                          {t('thinkingBudgetHint')}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleToggleThinkingSummary}
-                      className={`streaming-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                        providerConfig.showThinkingSummary
-                          ? 'bg-[var(--accent)]'
-                          : 'bg-[var(--pill)]'
-                      }`}
-                      aria-pressed={!!providerConfig.showThinkingSummary}
-                      aria-label={t('showThinkingSummary')}
-                    >
-                      <span
-                        className={`streaming-toggle-thumb inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                          providerConfig.showThinkingSummary
-                            ? 'translate-x-5'
-                            : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-
-                  <div className="streaming-toggle-container flex items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">
-                    <div className="flex-1">
-                      <label className="block text-sm text-text font-medium">
-                        {t('streaming')}
-                      </label>
-                      <p className="text-xs text-subtle mt-1">
-                        {t('streamingDescription')}
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleToggleStreaming}
-                      className={`streaming-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                        providerConfig.stream
-                          ? 'bg-[var(--accent)]'
-                          : 'bg-[var(--pill)]'
-                      }`}
-                      aria-pressed={providerConfig.stream}
-                      aria-label={t('streaming')}
-                    >
-                      <span
-                        className={`streaming-toggle-thumb inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                          providerConfig.stream
-                            ? 'translate-x-5'
-                            : 'translate-x-1'
-                        }`}
-                      />
-                    </button>
-                  </div>
-                  <p className="text-sm text-subtle text-center">
-                    {t('streamingHint')}
-                  </p>
-
-                  {/* Auto model switch hint for specific providers */}
-                  {(providerConfig.provider === 'deepseek' ||
-                    providerConfig.provider === 'longcat' ||
-                    providerConfig.provider === 'bailing' ||
-                    providerConfig.provider === 'moonshot') && (
-                    <div className="text-sm text-subtle text-center">
-                      {t('autoModelSwitch')}
-                    </div>
-                  )}
-                </div>
+                <ProviderTab
+                  t={t}
+                  providerRef={providerRef}
+                  dropdownStates={{ provider: dropdownStates.provider }}
+                  toggleDropdown={toggleDropdown}
+                  closeDropdown={closeDropdown}
+                  providerOptions={providerOptions}
+                  activeProviderLabel={activeProviderLabel}
+                  providerConfig={providerConfig}
+                  supportsAdvancedParams={supportsAdvancedParams}
+                  activeAdvancedSupport={activeAdvancedSupport}
+                  temperatureInput={temperatureInput}
+                  topPInput={topPInput}
+                  topKInput={topKInput}
+                  thinkingBudgetInput={thinkingBudgetInput}
+                  getDefaultModelForProvider={getDefaultModelForProvider}
+                  handleProviderChange={handleProviderChange}
+                  handleApiKeyChange={handleApiKeyChange}
+                  handleClearApiKey={handleClearApiKey}
+                  handleModelChange={handleModelChange}
+                  handleApiUrlChange={handleApiUrlChange}
+                  handleTemperatureChange={handleTemperatureChange}
+                  handleTopPChange={handleTopPChange}
+                  handleTopKChange={handleTopKChange}
+                  handleThinkingBudgetChange={handleThinkingBudgetChange}
+                  handleToggleAdvancedParams={handleToggleAdvancedParams}
+                  handleToggleThinkingSummary={handleToggleThinkingSummary}
+                  handleToggleStreaming={handleToggleStreaming}
+                />
               )}
 
               {activeTab === 'tools' && (
-                <div className="space-y-6 max-w-xl">
-                  <div className="space-y-2">
-                    <label className="block text-base text-text font-medium">
-                      {t('toolPermissions')}
-                    </label>
-                    <p className="text-sm text-subtle">
-                      {t('toolPermissionsSubtitle')}
-                    </p>
-                  </div>
-                  <div className="space-y-2">
-                    {toolOptions.map(tool => {
-                      const activeToolConfig = normalizeToolConfig(
-                        providerConfig.toolConfig
-                      );
-                      const checked =
-                        activeToolConfig.enabledToolNames.includes(tool.name);
-                      return (
-                        <div
-                          key={tool.name}
-                          className="streaming-toggle-container flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] px-4 py-4 text-base"
-                        >
-                          <div className="space-y-1">
-                            <div className="font-medium text-[var(--text)]">
-                              {tool.titleKey ? t(tool.titleKey) : tool.title}
-                            </div>
-                            <div className="text-sm text-subtle">
-                              {tool.descriptionKey
-                                ? t(tool.descriptionKey)
-                                : tool.description}
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleTool(tool.name)}
-                            className={`streaming-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                              checked
-                                ? 'bg-[var(--accent)]'
-                                : 'bg-[var(--pill)]'
-                            }`}
-                          >
-                            <span
-                              className={`streaming-toggle-thumb inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                                checked ? 'translate-x-5' : 'translate-x-1'
-                              }`}
-                            />
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div className="space-y-2">
-                    <label className="block text-base text-subtle">
-                      {t('toolChoice')}
-                    </label>
-                    <p className="text-sm text-subtle">{t('toolChoiceHint')}</p>
-                    <div className="relative" ref={toolChoiceRef}>
-                      <button
-                        onClick={() => toggleDropdown('toolChoice')}
-                        className="lang-trigger w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-base font-medium transition-colors"
-                      >
-                        <span>{activeToolChoiceLabel}</span>
-                        <ChevronDown
-                          className={`w-4 h-4 text-subtle transition-transform duration-200 ${dropdownStates.toolChoice ? 'rotate-180' : ''}`}
-                        />
-                      </button>
-
-                      {dropdownStates.toolChoice && (
-                        <div className="absolute top-full right-0 mt-2 w-full surface rounded-xl shadow-soft border-faint max-h-60 overflow-y-auto overflow-x-hidden py-1.5 scrollbar-thin z-50">
-                          {toolChoiceOptions.map(option => (
-                            <button
-                              key={option.id}
-                              className="lang-option w-full flex items-center justify-between px-4 py-2.5 text-left text-base hover:bg-[var(--panel-strong)] transition-colors text-text"
-                              onClick={() => {
-                                handleToolChoiceChange(option.id);
-                                closeDropdown('toolChoice');
-                              }}
-                            >
-                              <span>{option.label}</span>
-                              {normalizeToolConfig(providerConfig.toolConfig)
-                                .toolChoice === option.id && (
-                                <Check className="w-4 h-4 text-muted" />
-                              )}
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  {normalizeToolConfig(providerConfig.toolConfig).toolChoice ===
-                    'specific' && (
-                    <div className="space-y-2">
-                      <label className="block text-base text-subtle">
-                        {t('toolChoiceSpecificLabel')}
-                      </label>
-                      <input
-                        type="text"
-                        className="provider-field w-full rounded-xl border px-4 py-2.5 text-base focus:outline-none"
-                        placeholder={t('toolChoiceSpecificPlaceholder')}
-                        value={
-                          normalizeToolConfig(providerConfig.toolConfig)
-                            .toolChoiceName
-                        }
-                        onChange={event =>
-                          handleToolChoiceNameChange(event.target.value)
-                        }
-                      />
-                    </div>
-                  )}
-                </div>
+                <ToolsTab
+                  t={t}
+                  toolOptions={toolOptions}
+                  providerConfig={providerConfig}
+                  toolChoiceOptions={toolChoiceOptions}
+                  activeToolChoiceLabel={activeToolChoiceLabel}
+                  dropdownStates={{ toolChoice: dropdownStates.toolChoice }}
+                  toolChoiceRef={toolChoiceRef}
+                  toggleDropdown={toggleDropdown}
+                  closeDropdown={closeDropdown}
+                  normalizeToolConfig={normalizeToolConfig}
+                  handleToggleTool={handleToggleTool}
+                  handleToolChoiceChange={handleToolChoiceChange}
+                  handleToolChoiceNameChange={handleToolChoiceNameChange}
+                />
               )}
 
               {activeTab === 'memory' && (
-                <div className="space-y-6 max-w-xl mt-8">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-faint surface">
-                      <div className="flex-1">
-                        <label className="block text-base text-muted font-medium">
-                          {t('enableMemory')}
-                        </label>
-                        <p className="text-sm text-subtle mt-1">
-                          {t('memoryDescription')}
-                        </p>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleMemuConfigChange('enabled', !memuConfig.enabled)
-                        }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                          memuConfig.enabled
-                            ? 'bg-[var(--accent)]'
-                            : 'bg-[var(--pill)]'
-                        }`}
-                        aria-pressed={memuConfig.enabled}
-                        aria-label={t('enableMemory')}
-                      >
-                        <span
-                          className={`inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                            memuConfig.enabled
-                              ? 'translate-x-5'
-                              : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                    {!memuConfig.enabled && (
-                      <p className="text-base text-subtle text-center">
-                        {t('memoryExperimentalHint')}
-                      </p>
-                    )}
-                  </div>
-
-                  {memuConfig.enabled && (
-                    <>
-                      <div className="space-y-2">
-                        <label className="block text-base text-subtle">
-                          {t('memoryApiKey')}
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="password"
-                            className="provider-field w-full rounded-xl border px-4 py-2.5 pr-12 text-base focus:outline-none"
-                            placeholder={t('memoryApiKeyPlaceholder')}
-                            value={memuConfig.apiKey}
-                            onChange={e =>
-                              handleMemuConfigChange('apiKey', e.target.value)
-                            }
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleMemuConfigChange('apiKey', '')}
-                            className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-md hover:bg-[var(--panel-strong)] text-subtle hover:text-muted transition-colors"
-                            title={t('clearApiKey')}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-base text-subtle">
-                          {t('memoryBaseUrl')}
-                        </label>
-                        <input
-                          type="text"
-                          className="provider-field w-full rounded-xl border px-4 py-2.5 text-base focus:outline-none"
-                          placeholder={t('memoryBaseUrlPlaceholder')}
-                          value={memuConfig.baseUrl}
-                          onChange={e =>
-                            handleMemuConfigChange('baseUrl', e.target.value)
-                          }
-                        />
-                      </div>
-
-                      <div className="space-y-2">
-                        <label className="block text-base text-subtle">
-                          {t('maxMemories')}
-                        </label>
-                        <input
-                          type="text"
-                          min="1"
-                          max="50"
-                          className="provider-field w-full rounded-xl border px-4 py-2.5 text-base focus:outline-none"
-                          value={memuConfig.maxMemories}
-                          onChange={e => {
-                            const value = e.target.value.replace(/[^0-9]/g, '');
-                            handleMemuConfigChange(
-                              'maxMemories',
-                              parseInt(value, 10) || MEMU_DEFAULTS.MAX_MEMORIES
-                            );
-                          }}
-                        />
-                      </div>
-
-                      <div className="flex items-center justify-between gap-3 p-4 rounded-xl border border-faint surface">
-                        <div className="flex-1">
-                          <label className="block text-base text-muted font-medium">
-                            {t('autoSaveMemory')}
-                          </label>
-                          <p className="text-sm text-subtle mt-1">
-                            Automatically save conversations to memory
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleMemuConfigChange(
-                              'autoSave',
-                              !memuConfig.autoSave
-                            )
-                          }
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-                            memuConfig.autoSave
-                              ? 'bg-[var(--accent)]'
-                              : 'bg-[var(--pill)]'
-                          }`}
-                          aria-pressed={memuConfig.autoSave}
-                          aria-label={t('autoSaveMemory')}
-                        >
-                          <span
-                            className={`inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-                              memuConfig.autoSave
-                                ? 'translate-x-5'
-                                : 'translate-x-1'
-                            }`}
-                          />
-                        </button>
-                      </div>
-                      <div className="mt-3">
-                        <a
-                          href="https://app.memu.so/login"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-2 bg-[var(--accent-soft)] text-accent rounded-lg hover:bg-[var(--accent)] hover:text-white transition-colors text-base font-medium"
-                        >
-                          {t('memuPlatformLink')}
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                            />
-                          </svg>
-                        </a>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <MemoryTab
+                  t={t}
+                  memuConfig={memuConfig}
+                  handleMemuConfigChange={handleMemuConfigChange}
+                />
               )}
 
               {activeTab === 'data' && (
-                <div className="space-y-8 max-w-xl">
-                  {/* Token Calculator Section */}
-                  <div className="space-y-6">
-                    <div className="flex flex-wrap items-center justify-between gap-3 mb-4 pr-12">
-                      <div className="flex items-center gap-2">
-                        <Calculator className="w-5 h-5 text-muted" />
-                        <h3 className="text-xl font-semibold text-muted">
-                          {t('tokenCalculator')}
-                        </h3>
-                      </div>
-                      <div className="flex items-center rounded-full bg-[var(--panel-strong)] p-1">
-                        <button
-                          onClick={() => setCalculationMode('tokenToChar')}
-                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                            calculationMode === 'tokenToChar'
-                              ? 'bg-[var(--accent)] text-white'
-                              : 'text-subtle hover:text-[var(--text)]'
-                          }`}
-                        >
-                          {t('tokenToChar')}
-                        </button>
-                        <button
-                          onClick={() => setCalculationMode('charToToken')}
-                          className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                            calculationMode === 'charToToken'
-                              ? 'bg-[var(--accent)] text-white'
-                              : 'text-subtle hover:text-[var(--text)]'
-                          }`}
-                        >
-                          {t('charToToken')}
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Input Section */}
-                    <div className="space-y-4">
-                      {calculationMode === 'tokenToChar' ? (
-                        <div className="space-y-2">
-                          <label className="block text-base text-subtle">
-                            {t('tokenCount')}
-                          </label>
-                          <input
-                            type="text"
-                            className="provider-field w-full rounded-xl border px-4 py-2.5 text-base focus:outline-none"
-                            placeholder={t('enterTokenCount')}
-                            value={tokenInput}
-                            onChange={e =>
-                              setTokenInput(sanitizeNumber(e.target.value))
-                            }
-                          />
-                        </div>
-                      ) : (
-                        <div className="space-y-2">
-                          <label className="block text-base text-subtle">
-                            {t('characterCount')}
-                          </label>
-                          <input
-                            type="text"
-                            className="provider-field w-full rounded-xl border px-4 py-2.5 text-base focus:outline-none"
-                            placeholder={t('enterCharacterCount')}
-                            value={charInput}
-                            onChange={e =>
-                              setCharInput(sanitizeNumber(e.target.value))
-                            }
-                          />
-                        </div>
-                      )}
-
-                      {(tokenInput || charInput) && (
-                        <div className="text-base text-muted">
-                          <div className="font-medium mb-2">
-                            {t('conversionResult')}
-                          </div>
-                          {calculationMode === 'tokenToChar' ? (
-                            <div className="space-y-1">
-                              <div>
-                                {t('englishCharacters')}: {tokenToChar.english}
-                              </div>
-                              <div>
-                                {t('chineseCharacters')}: {tokenToChar.chinese}
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="space-y-1">
-                              <div>
-                                {t('englishTokens')}: {charToToken.english}
-                              </div>
-                              <div>
-                                {t('chineseTokens')}: {charToToken.chinese}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Conversion Reference */}
-                    <div className="p-4 surface-ghost rounded-lg">
-                      <div className="text-base text-subtle">
-                        <div className="font-medium mb-2">
-                          {t('conversionReference')}
-                        </div>
-                        <div className="space-y-1 text-sm">
-                          <div>{t('tokenConversionRef1')}</div>
-                          <div>{t('tokenConversionRef2')}</div>
-                          <div>{t('tokenConversionRef3')}</div>
-                          <div>{t('tokenConversionRef4')}</div>
-                          <div>{t('tokenConversionRef5')}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-3 text-base text-subtle">
-                      {t('tokenCalculatorNote')}
-                    </div>
-                  </div>
-                </div>
+                <DataTab
+                  t={t}
+                  calculationMode={calculationMode}
+                  setCalculationMode={setCalculationMode}
+                  tokenInput={tokenInput}
+                  setTokenInput={setTokenInput}
+                  charInput={charInput}
+                  setCharInput={setCharInput}
+                  tokenToChar={tokenToChar}
+                  charToToken={charToToken}
+                  sanitizeNumber={sanitizeNumber}
+                />
               )}
 
-              {activeTab === 'about' && (
-                <div className="space-y-6 max-w-xl">
-                  <div className="space-y-4">
-                    <h3 className="text-xl font-semibold text-muted">
-                      {t('about')}
-                    </h3>
-                    <PlatformLinks />
-                  </div>
-                </div>
-              )}
+              {activeTab === 'about' && <AboutTab t={t} />}
 
               {activeTab !== 'general' &&
                 activeTab !== 'provider' &&
