@@ -104,7 +104,7 @@ const isProviderType = (value: unknown): value is ProviderType => {
 const coerceStore = (parsed: unknown): ProviderConfigStoreV2 | null => {
   if (!parsed || typeof parsed !== 'object') return null;
 
-  const candidate = parsed as any;
+  const candidate = parsed as Record<string, unknown>;
 
   if (
     candidate.version === STORE_VERSION &&
@@ -117,14 +117,15 @@ const coerceStore = (parsed: unknown): ProviderConfigStoreV2 | null => {
 
   // Backward compatibility: older schema stored a single ProviderConfig
   if (isProviderType(candidate.provider)) {
-    const provider = candidate.provider as ProviderType;
+    const provider = candidate.provider;
+    const legacyConfig = candidate as Partial<ProviderConfig>;
     const migrated: ProviderConfigStoreV2 = {
       version: STORE_VERSION,
       currentProvider: provider,
       configs: {
         [provider]: {
           ...getBaseConfigForProvider(provider),
-          ...candidate,
+          ...legacyConfig,
           provider,
         },
       },
@@ -200,7 +201,7 @@ const mergeProviderConfig = (
   if (provider === 'openai-compatible') {
     merged.apiUrl = stored?.apiUrl ?? base.apiUrl;
   } else {
-    delete (merged as any).apiUrl;
+    delete merged.apiUrl;
   }
 
   return merged;

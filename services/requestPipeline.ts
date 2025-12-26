@@ -102,8 +102,8 @@ export const streamGoogleProvider = async function* (options: {
 };
 
 type AnthropicPayloadOptions = WithModelStream<AnthropicAdapterResult> & {
-  tools?: any;
-  tool_choice?: any;
+  tools?: Array<Record<string, unknown>>;
+  tool_choice?: Record<string, unknown>;
   max_tokens?: number;
 };
 

@@ -3,6 +3,16 @@ type TesseractWorker = Awaited<
 >;
 
 type OcrProgressHandler = (progress: number) => void;
+type PdfViewport = { width: number; height: number };
+type PdfRenderTask = { promise: Promise<void> };
+type PdfPage = {
+  getViewport: (options: { scale: number }) => PdfViewport;
+  render: (options: {
+    canvasContext: CanvasRenderingContext2D;
+    viewport: PdfViewport;
+  }) => PdfRenderTask;
+  getTextContent: () => Promise<{ items: Array<{ str?: string }> }>;
+};
 
 export interface FileParseOptions {
   readonly ocrLanguage?: string;
@@ -99,7 +109,7 @@ const extractPdfText = async (file: File) => {
   return pages.join('\n\n');
 };
 
-const renderPdfPageToBlob = async (page: any, scale: number) => {
+const renderPdfPageToBlob = async (page: PdfPage, scale: number) => {
   const viewport = page.getViewport({ scale });
   const canvas = document.createElement('canvas');
   canvas.width = Math.ceil(viewport.width);

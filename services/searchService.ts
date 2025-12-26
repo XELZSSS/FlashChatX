@@ -87,8 +87,14 @@ export const performSearch = async (
 
     // Process search results
     if (response.data.results && Array.isArray(response.data.results)) {
+      type SearchApiItem = {
+        title?: string;
+        url?: string;
+        snippet?: string;
+        description?: string;
+      };
       searchResponse.results = response.data.results.map(
-        (item: any, index: number) => ({
+        (item: SearchApiItem, index: number) => ({
           title: item.title || '',
           url: item.url || '',
           snippet: item.snippet || item.description || '',
@@ -100,10 +106,16 @@ export const performSearch = async (
     return searchResponse;
   } catch (error) {
     if (axios.isAxiosError(error)) {
+      const data = error.response?.data;
+      const messageFromData =
+        data &&
+        typeof data === 'object' &&
+        'message' in data &&
+        typeof data.message === 'string'
+          ? data.message
+          : '';
       const message =
-        (error.response?.data as any)?.message ||
-        error.response?.statusText ||
-        error.message;
+        messageFromData || error.response?.statusText || error.message;
       throw new Error(`Search failed: ${message}`);
     }
     throw new Error(

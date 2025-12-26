@@ -245,7 +245,17 @@ export const retrieveRelevantMemories = async (
       minSimilarity: 0.5,
     });
 
-    return memories.relatedMemories.map((memory: any) => ({
+    type MemuMemory = {
+      memory?: {
+        id?: string;
+        content?: string;
+        category?: string;
+        timestamp?: string;
+      };
+      similarityScore?: number;
+    };
+    const relatedMemories = memories.relatedMemories as MemuMemory[];
+    return relatedMemories.map(memory => ({
       id: memory.memory?.id || Math.random().toString(36).substr(2, 9),
       content: memory.memory?.content || '',
       similarityScore: memory.similarityScore,

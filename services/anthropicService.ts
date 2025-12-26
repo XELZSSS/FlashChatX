@@ -15,10 +15,20 @@ import {
   streamAnthropicProvider,
 } from './requestPipeline';
 import { buildAnthropicAdapterContext } from './adapters/registry';
+import type {
+  AnthropicAdapterResult,
+  AnthropicContentBlock,
+  AnthropicMessage,
+} from './adapters/types';
 
 type CompletionUsage = {
   input_tokens?: number;
   output_tokens?: number;
+};
+
+type AnthropicCompletion = {
+  content?: AnthropicContentBlock[];
+  usage?: CompletionUsage;
 };
 
 const toTokenUsage = (usage?: CompletionUsage): TokenUsage | undefined =>
@@ -39,7 +49,10 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
     streaming,
   } = resolveProviderState(providerConfig);
 
-  const adapter = buildAnthropicAdapterContext(params, config);
+  const adapter: AnthropicAdapterResult = buildAnthropicAdapterContext(
+    params,
+    config
+  );
   const {
     messages: finalMessages,
     systemMessage,
@@ -81,7 +94,7 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
 
   try {
     if (allowTool && tools) {
-      const completion = await postProxyJson(
+      const completion = (await postProxyJson(
         'anthropic',
         buildAnthropicPayload({
           model: modelToUse,
@@ -96,26 +109,35 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
           tools,
           tool_choice,
         })
-      );
+      )) as AnthropicCompletion;
       const toolUse = completion.content?.find(
-        (block: any) =>
-          block?.type === 'tool_use' && block?.name === SYSTEM_TIME_TOOL_NAME
+        (block): block is AnthropicContentBlock & { type: 'tool_use' } =>
+          block.type === 'tool_use' && block.name === SYSTEM_TIME_TOOL_NAME
       );
 
       if (toolUse?.id) {
-        const toolResult = {
+        const toolInput =
+          toolUse.input &&
+          typeof toolUse.input === 'object' &&
+          'format' in toolUse.input
+            ? (toolUse.input as { format?: string }).format
+            : undefined;
+        const toolResult: AnthropicContentBlock = {
           type: 'tool_result',
           tool_use_id: toolUse.id,
-          content: buildSystemTimeToolResult(toolUse.input?.format),
+          content: buildSystemTimeToolResult(toolInput),
         };
-        const nextMessages = [
+        const assistantContent = completion.content as
+          | AnthropicContentBlock[]
+          | string;
+        const nextMessages: AnthropicMessage[] = [
           ...finalMessages,
-          { role: 'assistant', content: completion.content },
+          { role: 'assistant', content: assistantContent },
           { role: 'user', content: [toolResult] },
         ];
 
         if (!streaming) {
-          const followup = await postProxyJson(
+          const followup = (await postProxyJson(
             'anthropic',
             buildAnthropicPayload({
               model: modelToUse,
@@ -130,11 +152,11 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
               tools,
               tool_choice,
             })
-          );
+          )) as AnthropicCompletion;
           const content =
             followup.content
-              ?.filter((block: any) => block.type === 'text')
-              .map((block: any) => block.text)
+              ?.filter(block => block.type === 'text')
+              .map(block => block.text)
               .join('') || '';
 
           const usage = toTokenUsage(followup.usage);
@@ -170,7 +192,7 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
     }
 
     if (!streaming) {
-      const completion = await postProxyJson(
+      const completion = (await postProxyJson(
         'anthropic',
         buildAnthropicPayload({
           model: modelToUse,
@@ -185,11 +207,11 @@ export const streamAnthropicResponse = async function* (params: ServiceParams) {
           tools,
           tool_choice,
         })
-      );
+      )) as AnthropicCompletion;
       const content =
         completion.content
-          ?.filter((block: any) => block.type === 'text')
-          .map((block: any) => block.text)
+          ?.filter(block => block.type === 'text')
+          .map(block => block.text)
           .join('') || '';
 
       const usage = toTokenUsage(completion.usage);

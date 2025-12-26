@@ -52,6 +52,16 @@ interface SettingsModalProps {
   readonly onUpdateSettings: (newSettings: ExtendedUserSettings) => void;
 }
 
+type SettingsTabId =
+  | 'general'
+  | 'provider'
+  | 'tools'
+  | 'memory'
+  | 'profile'
+  | 'data'
+  | 'about';
+type TabIcon = React.ComponentType<React.SVGProps<SVGSVGElement>>;
+
 const sanitizeNumber = (value: string) => value.replace(/[^0-9.]/g, '');
 const normalizeDecimalInput = (value: string) => {
   const sanitized = sanitizeNumber(value);
@@ -70,9 +80,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const [initialConfig] = useState<ProviderConfig>(() => loadProviderConfig());
   const isMountedRef = useRef(true);
 
-  const [activeTab, setActiveTab] = useState<
-    'general' | 'provider' | 'tools' | 'memory' | 'profile' | 'data' | 'about'
-  >('general');
+  const [activeTab, setActiveTab] = useState<SettingsTabId>('general');
   const [dropdownStates, setDropdownStates] = useState({
     language: false,
     provider: false,
@@ -133,7 +141,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     handleClickOutside,
   ]);
 
-  const tabs = useMemo(
+  const tabs = useMemo<
+    ReadonlyArray<{
+      id: SettingsTabId;
+      label: string;
+      icon: TabIcon;
+    }>
+  >(
     () => [
       { id: 'general', label: t('general'), icon: SettingsIcon },
       { id: 'provider', label: t('providerSettings'), icon: Cloud },
@@ -537,7 +551,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   // MemU configuration handlers
   const handleMemuConfigChange = useCallback(
-    (field: keyof MemuSettings, value: any) => {
+    (field: keyof MemuSettings, value: MemuSettings[keyof MemuSettings]) => {
       setMemuConfig(prev => {
         const newMemuConfig = { ...prev, [field]: value };
         onUpdateSettings({ ...settings, memu: newMemuConfig });
@@ -650,7 +664,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             return (
               <button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+                onClick={() => setActiveTab(tab.id)}
                 className={`settings-tab flex items-center gap-2 md:gap-3 px-5 md:px-6 py-3 md:py-3.5 rounded-xl text-[15px] font-medium transition-all whitespace-nowrap ${
                   isActive
                     ? 'text-text settings-tab-active'
