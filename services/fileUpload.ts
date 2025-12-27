@@ -40,8 +40,6 @@ const guessMimeType = (file: File) => {
       return 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
     case 'xlsx':
       return 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    case 'xls':
-      return 'application/vnd.ms-excel';
     case 'png':
       return 'image/png';
     case 'jpg':

@@ -85,8 +85,8 @@ const buildTray = () => {
 const getContentSecurityPolicy = () =>
   [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com blob:",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com",
+    "script-src 'self' 'unsafe-inline' blob:",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob:",
     "connect-src 'self' http://localhost:3000 ws://localhost:3000 http://localhost:8787 ws://localhost:8787 https:",

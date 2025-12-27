@@ -174,18 +174,46 @@ const parseDocx = async (file: File) => {
   return result.value || '';
 };
 
+const csvEscape = (value: string) => {
+  if (/["\n,]/.test(value)) {
+    return `"${value.replace(/"/g, '""')}"`;
+  }
+  return value;
+};
+
+const getCellText = (cell: import('exceljs').Cell) => {
+  if (typeof cell.text === 'string') return cell.text;
+  const value = cell.value;
+  if (value === null || value === undefined) return '';
+  if (value instanceof Date) return value.toISOString();
+  if (typeof value === 'object' && 'text' in value) {
+    return String((value as { text?: string }).text ?? '');
+  }
+  return String(value);
+};
+
 const parseXlsx = async (file: File) => {
   const buffer = await readFileAsArrayBuffer(file);
-  const XLSX = await import('xlsx');
-  const workbook = XLSX.read(buffer, { type: 'array' });
+  const { default: ExcelJS } = await import('exceljs');
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
   const outputs: string[] = [];
 
-  workbook.SheetNames.forEach(name => {
-    const sheet = workbook.Sheets[name];
-    if (!sheet) return;
-    const csv = XLSX.utils.sheet_to_csv(sheet);
+  workbook.worksheets.forEach(sheet => {
+    const rows: string[] = [];
+    sheet.eachRow({ includeEmpty: true }, row => {
+      const values: string[] = [];
+      for (let i = 1; i <= row.cellCount; i += 1) {
+        values.push(csvEscape(getCellText(row.getCell(i))));
+      }
+      const line = values.join(',').trimEnd();
+      if (line.trim()) {
+        rows.push(line);
+      }
+    });
+    const csv = rows.join('\n');
     if (csv.trim()) {
-      outputs.push(`--- Sheet: ${name} ---\n${csv.trim()}`);
+      outputs.push(`--- Sheet: ${sheet.name} ---\n${csv.trim()}`);
     }
   });
 
@@ -210,7 +238,7 @@ export const parseFileToText = async (
     return parseDocx(file);
   }
 
-  if (extension === 'xlsx' || extension === 'xls') {
+  if (extension === 'xlsx') {
     return parseXlsx(file);
   }
 

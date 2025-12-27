@@ -1,6 +1,7 @@
 import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig(({ mode }) => {
   // Load all environment variables, including .env.local
@@ -12,7 +13,7 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     define: {
       // Ensure all environment variables are available
       'process.env': JSON.stringify(env),
@@ -39,7 +40,7 @@ export default defineConfig(({ mode }) => {
               if (id.includes('pdfjs-dist')) return 'pdfjs';
               if (id.includes('tesseract.js')) return 'tesseract';
               if (id.includes('mammoth')) return 'mammoth';
-              if (id.includes('xlsx')) return 'xlsx';
+              if (id.includes('exceljs')) return 'exceljs';
               return 'vendor';
             }
           },

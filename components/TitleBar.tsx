@@ -46,10 +46,14 @@ const TitleBar: React.FC = () => {
     window.electronAPI?.close?.();
   };
 
+  if (!hasElectronAPI) {
+    return null;
+  }
+
   return (
     <div className="titlebar">
       <div className="titlebar-drag" />
-      <div className="titlebar-controls" aria-hidden={!hasElectronAPI}>
+      <div className="titlebar-controls">
         <button
           className="titlebar-btn"
           type="button"

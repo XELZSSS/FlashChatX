@@ -2,19 +2,19 @@ import { Theme, ProviderType, ThinkingLevel } from './types';
 
 // Model constants for each provider
 export const MODEL_CONFIG = {
-  openai: 'gpt5.1',
+  openai: 'gpt-5.2',
   mimo: 'mimo-v2-flash',
-  z: 'glm-4.6',
-  'z-intl': 'glm-4.6',
+  z: 'glm-4.7',
+  'z-intl': 'glm-4.7',
   deepseek: 'deepseek-chat',
-  'openai-compatible': 'gpt-3.5-turbo',
+  'openai-compatible': 'gpt-5.2',
   bailing: 'Ling-1T',
   longcat: 'LongCat-Flash-Chat',
   modelscope: 'deepseek-ai/DeepSeek-V3',
   moonshot: 'kimi-k2-turbo-preview',
-  minimax: 'MiniMax-M2',
+  minimax: 'MiniMax-M2.1',
   google: 'gemini-2.0-flash-exp',
-  anthropic: 'claude-3-5-sonnet-20241022',
+  anthropic: 'Claude Opus 4.5',
 } as const satisfies Record<ProviderType, string>;
 
 // Bailing specific models

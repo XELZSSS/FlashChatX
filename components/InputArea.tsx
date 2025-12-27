@@ -368,7 +368,7 @@ const InputArea: React.FC<InputAreaProps> = ({
               type="file"
               className="hidden"
               multiple
-              accept=".txt,.md,.docx,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.bmp,.gif,.webp,.tif,.tiff"
+              accept=".txt,.md,.docx,.xlsx,.pdf,.png,.jpg,.jpeg,.bmp,.gif,.webp,.tif,.tiff"
               onChange={handleFileSelect}
             />
             <button
