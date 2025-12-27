@@ -18,8 +18,6 @@ import {
 import { ChatConfig, LocalAttachment } from '../types';
 import { useTranslation } from '../contexts/useTranslation';
 import InfoDialog from './InfoDialog';
-import { preloadEmojiData } from '../utils/emojiLoader';
-
 const EmojiPicker = React.lazy(() => import('./EmojiPicker'));
 
 interface InputAreaProps {
@@ -71,16 +69,6 @@ const InputArea: React.FC<InputAreaProps> = ({
     const newHeight = Math.min(textarea.scrollHeight, 200);
     textarea.style.height = `${newHeight}px`;
   }, [input]);
-
-  useEffect(() => {
-    const idleCallback = globalThis.requestIdleCallback;
-    if (idleCallback) {
-      const handle = idleCallback(() => preloadEmojiData());
-      return () => globalThis.cancelIdleCallback?.(handle);
-    }
-    const handle = globalThis.setTimeout(() => preloadEmojiData(), 600);
-    return () => globalThis.clearTimeout(handle);
-  }, []);
 
   useEffect(() => {
     if (!isEmojiOpen) return;

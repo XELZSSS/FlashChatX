@@ -181,39 +181,25 @@ const csvEscape = (value: string) => {
   return value;
 };
 
-const getCellText = (cell: import('exceljs').Cell) => {
-  if (typeof cell.text === 'string') return cell.text;
-  const value = cell.value;
-  if (value === null || value === undefined) return '';
-  if (value instanceof Date) return value.toISOString();
-  if (typeof value === 'object' && 'text' in value) {
-    return String((value as { text?: string }).text ?? '');
-  }
-  return String(value);
-};
-
 const parseXlsx = async (file: File) => {
   const buffer = await readFileAsArrayBuffer(file);
-  const { default: ExcelJS } = await import('exceljs');
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.load(buffer);
+  const XLSX = await import('xlsx');
+  const workbook = XLSX.read(buffer, { type: 'array' });
   const outputs: string[] = [];
 
-  workbook.worksheets.forEach(sheet => {
-    const rows: string[] = [];
-    sheet.eachRow({ includeEmpty: true }, row => {
-      const values: string[] = [];
-      for (let i = 1; i <= row.cellCount; i += 1) {
-        values.push(csvEscape(getCellText(row.getCell(i))));
-      }
-      const line = values.join(',').trimEnd();
-      if (line.trim()) {
-        rows.push(line);
-      }
-    });
-    const csv = rows.join('\n');
-    if (csv.trim()) {
-      outputs.push(`--- Sheet: ${sheet.name} ---\n${csv.trim()}`);
+  workbook.SheetNames.forEach(name => {
+    const sheet = workbook.Sheets[name];
+    if (!sheet) return;
+    const rows = XLSX.utils.sheet_to_json(sheet, {
+      header: 1,
+      raw: false,
+      defval: '',
+    }) as Array<Array<unknown>>;
+    const csvRows = rows
+      .map(row => row.map(cell => csvEscape(String(cell ?? ''))).join(','))
+      .filter(line => line.trim());
+    if (csvRows.length > 0) {
+      outputs.push(`--- Sheet: ${name} ---\n${csvRows.join('\n')}`);
     }
   });
 

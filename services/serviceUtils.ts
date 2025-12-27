@@ -6,7 +6,6 @@ import {
 import { TokenUsage, ThinkingLevel, LocalAttachment } from '../types';
 import type { OpenAIContentPart } from './adapters/types';
 import { THINKING_BUDGETS } from '../constants';
-import { parseFileToText } from '../utils/fileParser';
 import type { ToolPermissionConfig } from '../types';
 import {
   getDefaultToolConfig,
@@ -840,6 +839,7 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
           if (!attachment) {
             content = `File not found: ${args.file_name || args.file_id || 'unknown'}`;
           } else {
+            const { parseFileToText } = await import('../utils/fileParser');
             content = await parseFileToText(attachment.file);
           }
         } else if (toolName === WEB_SEARCH_TOOL_NAME) {
