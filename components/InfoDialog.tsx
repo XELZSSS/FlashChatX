@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { X, AlertTriangle } from 'lucide-react';
 import { useTranslation } from '../contexts/useTranslation';
 
@@ -9,6 +9,12 @@ interface InfoDialogProps {
 
 const InfoDialog: React.FC<InfoDialogProps> = ({ isOpen, onClose }) => {
   const { t } = useTranslation();
+  const [isVisible, setIsVisible] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const openTimerRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+  const modalTransitionMs = 160;
   const handleClose = useCallback(() => {
     onClose();
   }, [onClose]);
@@ -28,21 +34,74 @@ const InfoDialog: React.FC<InfoDialogProps> = ({ isOpen, onClose }) => {
     };
   }, [handleClose, isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+      openTimerRef.current = window.setTimeout(() => {
+        setIsVisible(true);
+        setIsClosing(false);
+      }, 0);
+      return () => {
+        if (openTimerRef.current) {
+          window.clearTimeout(openTimerRef.current);
+          openTimerRef.current = null;
+        }
+      };
+    }
+
+    if (!isVisible) return;
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsClosing(true);
+    }, 0);
+    hideTimerRef.current = window.setTimeout(() => {
+      setIsVisible(false);
+      setIsClosing(false);
+    }, modalTransitionMs);
+
+    return () => {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+  }, [isOpen, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="InfoDialog info-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={handleClose}
+      data-state={isClosing ? 'closing' : 'open'}
     >
       <div
-        className="rounded-2xl max-w-md w-full p-6 border-0"
+        className="info-panel rounded-2xl max-w-md w-full p-6 border-0"
         style={{
           background: 'var(--panel)',
           color: 'var(--text)',
           boxShadow: 'none',
         }}
         onClick={e => e.stopPropagation()}
+        data-state={isClosing ? 'closing' : 'open'}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

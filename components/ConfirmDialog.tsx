@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { useTranslation } from '../contexts/useTranslation';
 
@@ -24,6 +24,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   confirmButtonClass = 'bg-red-600 hover:bg-red-700 text-white',
 }) => {
   const { t } = useTranslation();
+  const [isVisible, setIsVisible] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const openTimerRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+  const modalTransitionMs = 160;
   const handleKeyDown = useCallback(
     (event: globalThis.KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -42,16 +48,69 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     };
   }, [handleKeyDown, isOpen]);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (isOpen) {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+      openTimerRef.current = window.setTimeout(() => {
+        setIsVisible(true);
+        setIsClosing(false);
+      }, 0);
+      return () => {
+        if (openTimerRef.current) {
+          window.clearTimeout(openTimerRef.current);
+          openTimerRef.current = null;
+        }
+      };
+    }
+
+    if (!isVisible) return;
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsClosing(true);
+    }, 0);
+    hideTimerRef.current = window.setTimeout(() => {
+      setIsVisible(false);
+      setIsClosing(false);
+    }, modalTransitionMs);
+
+    return () => {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+  }, [isOpen, isVisible]);
+
+  if (!isVisible) return null;
 
   return (
     <div
-      className="ConfirmDialog fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+      className="ConfirmDialog confirm-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
       onClick={onCancel}
+      data-state={isClosing ? 'closing' : 'open'}
     >
       <div
-        className="surface rounded-2xl max-w-md w-full shadow-soft p-6"
+        className="confirm-panel surface rounded-2xl max-w-md w-full shadow-soft p-6"
         onClick={e => e.stopPropagation()}
+        data-state={isClosing ? 'closing' : 'open'}
       >
         {/* Header */}
         <div className="flex items-center justify-between mb-4">

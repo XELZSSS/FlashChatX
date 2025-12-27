@@ -775,6 +775,100 @@ button.sidebar-newchat:hover {
   backdrop-filter: blur(4px) saturate(1.1) !important;
 }
 
+.settings-backdrop {
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+
+.settings-backdrop[data-state='closing'] {
+  opacity: 0;
+}
+
+.settings-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
+}
+
+.settings-panel[data-state='closing'] {
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+}
+
+.confirm-backdrop {
+  background-color: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px) saturate(1.1);
+  opacity: 1;
+  transition: opacity 0.16s ease;
+}
+
+.confirm-backdrop[data-state='closing'] {
+  opacity: 0;
+}
+
+.confirm-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.confirm-panel[data-state='closing'] {
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+}
+
+.rename-backdrop {
+  background-color: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px) saturate(1.1);
+  opacity: 1;
+  transition: opacity 0.16s ease;
+}
+
+.rename-backdrop[data-state='closing'] {
+  opacity: 0;
+}
+
+.rename-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.rename-panel[data-state='closing'] {
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+}
+
+.info-backdrop {
+  background-color: rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(4px) saturate(1.1);
+  opacity: 1;
+  transition: opacity 0.16s ease;
+}
+
+.info-backdrop[data-state='closing'] {
+  opacity: 0;
+}
+
+.info-panel {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.16s ease,
+    transform 0.16s ease;
+}
+
+.info-panel[data-state='closing'] {
+  opacity: 0;
+  transform: translateY(6px) scale(0.98);
+}
+
 /* Copy success toast animation */
 @keyframes fadeIn {
   from {

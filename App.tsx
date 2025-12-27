@@ -248,6 +248,64 @@ const AppContent: React.FC<{
     setSessionsWithRef,
   });
 
+  const [renameVisible, setRenameVisible] = useState(isRenameDialogOpen);
+  const [renameClosing, setRenameClosing] = useState(false);
+  const renameOpenTimerRef = useRef<number | null>(null);
+  const renameCloseTimerRef = useRef<number | null>(null);
+  const renameHideTimerRef = useRef<number | null>(null);
+  const renameTransitionMs = 160;
+
+  useEffect(() => {
+    if (isRenameDialogOpen) {
+      if (renameOpenTimerRef.current) {
+        window.clearTimeout(renameOpenTimerRef.current);
+        renameOpenTimerRef.current = null;
+      }
+      if (renameCloseTimerRef.current) {
+        window.clearTimeout(renameCloseTimerRef.current);
+        renameCloseTimerRef.current = null;
+      }
+      if (renameHideTimerRef.current) {
+        window.clearTimeout(renameHideTimerRef.current);
+        renameHideTimerRef.current = null;
+      }
+      renameOpenTimerRef.current = window.setTimeout(() => {
+        setRenameVisible(true);
+        setRenameClosing(false);
+      }, 0);
+      return () => {
+        if (renameOpenTimerRef.current) {
+          window.clearTimeout(renameOpenTimerRef.current);
+          renameOpenTimerRef.current = null;
+        }
+      };
+    }
+
+    if (!renameVisible) return;
+    renameCloseTimerRef.current = window.setTimeout(() => {
+      setRenameClosing(true);
+    }, 0);
+    renameHideTimerRef.current = window.setTimeout(() => {
+      setRenameVisible(false);
+      setRenameClosing(false);
+    }, renameTransitionMs);
+
+    return () => {
+      if (renameOpenTimerRef.current) {
+        window.clearTimeout(renameOpenTimerRef.current);
+        renameOpenTimerRef.current = null;
+      }
+      if (renameCloseTimerRef.current) {
+        window.clearTimeout(renameCloseTimerRef.current);
+        renameCloseTimerRef.current = null;
+      }
+      if (renameHideTimerRef.current) {
+        window.clearTimeout(renameHideTimerRef.current);
+        renameHideTimerRef.current = null;
+      }
+    };
+  }, [isRenameDialogOpen, renameVisible]);
+
   return (
     <div className="app-shell flex h-screen">
       <Sidebar
@@ -372,9 +430,15 @@ const AppContent: React.FC<{
       )}
 
       {/* Rename Dialog */}
-      {isRenameDialogOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center">
-          <div className="RenameDialog surface rounded-lg p-4 w-full max-w-md mx-4">
+      {renameVisible && (
+        <div
+          className="rename-backdrop fixed inset-0 z-50 flex items-center justify-center"
+          data-state={renameClosing ? 'closing' : 'open'}
+        >
+          <div
+            className="RenameDialog rename-panel surface rounded-lg p-4 w-full max-w-md mx-4"
+            data-state={renameClosing ? 'closing' : 'open'}
+          >
             <h3 className="text-lg font-medium mb-3">{t('renameChatTitle')}</h3>
             <input
               type="text"

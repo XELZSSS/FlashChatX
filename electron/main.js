@@ -213,7 +213,7 @@ ipcMain.handle(WINDOW_STATE_REQUEST_CHANNEL, event => {
   };
 });
 
-ipcMain.handle(WINDOW_THEME_CHANNEL, (event, color) => {
+ipcMain.on(WINDOW_THEME_CHANNEL, (event, color) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (!win || typeof color !== 'string') return;
   win.setBackgroundColor(color);

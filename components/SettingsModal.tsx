@@ -88,6 +88,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const { t } = useTranslation();
   const [initialConfig] = useState<ProviderConfig>(() => loadProviderConfig());
   const isMountedRef = useRef(true);
+  const [isVisible, setIsVisible] = useState(isOpen);
+  const [isClosing, setIsClosing] = useState(false);
+  const openTimerRef = useRef<number | null>(null);
+  const closeTimerRef = useRef<number | null>(null);
+  const hideTimerRef = useRef<number | null>(null);
+  const saveTimerRef = useRef<number | null>(null);
+  const modalTransitionMs = 180;
 
   const [activeTab, setActiveTab] = useState<SettingsTabId>('general');
   const [dropdownStates, setDropdownStates] = useState({
@@ -130,6 +137,57 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
       isMountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+      openTimerRef.current = window.setTimeout(() => {
+        setIsVisible(true);
+        setIsClosing(false);
+      }, 0);
+      return () => {
+        if (openTimerRef.current) {
+          window.clearTimeout(openTimerRef.current);
+          openTimerRef.current = null;
+        }
+      };
+    }
+
+    if (!isVisible) return;
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsClosing(true);
+    }, 0);
+    hideTimerRef.current = window.setTimeout(() => {
+      setIsVisible(false);
+      setIsClosing(false);
+    }, modalTransitionMs);
+
+    return () => {
+      if (openTimerRef.current) {
+        window.clearTimeout(openTimerRef.current);
+        openTimerRef.current = null;
+      }
+      if (closeTimerRef.current) {
+        window.clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
+      }
+      if (hideTimerRef.current) {
+        window.clearTimeout(hideTimerRef.current);
+        hideTimerRef.current = null;
+      }
+    };
+  }, [isOpen, isVisible, isClosing]);
 
   useEffect(() => {
     if (
@@ -621,14 +679,19 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
     if (hasProviderChanged || hasMemuChanged) {
       const providerSnapshot = providerConfig;
-      void (async () => {
-        if (hasProviderChanged) {
-          await saveConfigOnClose(providerSnapshot);
-        }
-        if (hasMemuChanged) {
-          await handleSaveMemuConfig();
-        }
-      })();
+      if (saveTimerRef.current) {
+        window.clearTimeout(saveTimerRef.current);
+      }
+      saveTimerRef.current = window.setTimeout(() => {
+        void (async () => {
+          if (hasProviderChanged) {
+            await saveConfigOnClose(providerSnapshot);
+          }
+          if (hasMemuChanged) {
+            await handleSaveMemuConfig();
+          }
+        })();
+      }, modalTransitionMs);
     }
   }, [
     handleSaveMemuConfig,
@@ -656,11 +719,17 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     [charValue]
   );
 
-  if (!isOpen) return null;
+  if (!isVisible) return null;
 
   return (
-    <div className="SettingsModal fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-      <div className="surface rounded-2xl w-full max-w-[1040px] h-[85vh] max-h-[700px] flex flex-col md:flex-row overflow-hidden relative border-0">
+    <div
+      className="SettingsModal settings-backdrop fixed inset-0 z-[100] flex items-center justify-center p-4"
+      data-state={isClosing ? 'closing' : 'open'}
+    >
+      <div
+        className="settings-panel surface rounded-2xl w-full max-w-[1040px] h-[85vh] max-h-[700px] flex flex-col md:flex-row overflow-hidden relative border-0"
+        data-state={isClosing ? 'closing' : 'open'}
+      >
         {/* Settings Sidebar */}
         <div className="w-full md:w-64 surface-ghost p-4 md:p-6 flex flex-row md:flex-col gap-2 overflow-x-auto md:overflow-visible flex-shrink-0 h-full">
           <h2 className="text-lg md:text-xl font-semibold text-muted mb-0 md:mb-6 hidden md:block">
