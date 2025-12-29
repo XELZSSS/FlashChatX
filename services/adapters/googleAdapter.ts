@@ -1,4 +1,8 @@
-import { ServiceParams, UploadedFileReference } from '../../types';
+import {
+  ProviderType,
+  ServiceParams,
+  UploadedFileReference,
+} from '../../types';
 import { buildInstructionText } from '../messageBuilder';
 import { resolveThinkingBudget } from '../serviceUtils';
 import {
@@ -9,6 +13,7 @@ import {
 
 const buildGoogleParts = (
   text: string,
+  provider: ProviderType,
   attachments?: UploadedFileReference[]
 ): GoogleContentPart[] => {
   const parts: GoogleContentPart[] = [];
@@ -17,7 +22,7 @@ const buildGoogleParts = (
   }
 
   attachments
-    ?.filter(item => item.provider === 'google' && item.fileUri)
+    ?.filter(item => item.provider === provider && item.fileUri)
     .forEach(item => {
       if (item.fileUri) {
         parts.push({
@@ -35,7 +40,8 @@ const buildGoogleParts = (
 
 export const buildGoogleAdapter = (
   params: ServiceParams,
-  config: GoogleAdapterConfig
+  config: GoogleAdapterConfig,
+  provider: ProviderType = 'gemini'
 ): GoogleAdapterResult => {
   const { history, message, useThinking, useSearch, thinkingLevel } = params;
 
@@ -43,6 +49,7 @@ export const buildGoogleAdapter = (
     role: item.role === 'model' ? 'model' : 'user',
     parts: buildGoogleParts(
       item.content || '',
+      provider,
       item.role === 'user' ? item.attachments : undefined
     ),
   }));
@@ -56,7 +63,7 @@ export const buildGoogleAdapter = (
   if (shouldAppendMessage) {
     contents.push({
       role: 'user',
-      parts: buildGoogleParts(message, undefined),
+      parts: buildGoogleParts(message, provider, undefined),
     });
   }
 

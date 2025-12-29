@@ -40,9 +40,6 @@ type OpenAIToolCall = {
   id: string;
   function?: { name?: string; arguments?: string };
 };
-type GoogleResponse = {
-  candidates?: Array<{ content?: { parts?: Array<{ text?: string }> } }>;
-};
 type AnthropicResponse = {
   content?: Array<{ type?: string; text?: string }>;
   usage?: { input_tokens?: number; output_tokens?: number };
@@ -300,10 +297,6 @@ export const postProxyJson = async (endpoint: string, payload: unknown) => {
   const response = await fetchProxy(endpoint, payload);
   return response.json();
 };
-
-const extractGoogleResponseText = (data: GoogleResponse): string =>
-  data.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('') ||
-  '';
 
 type OpenAIStreamUsage = {
   prompt_tokens?: number;
@@ -580,72 +573,6 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
 
     if (tokenUsage) {
       yield `__TOKEN_USAGE__${JSON.stringify(tokenUsage)}`;
-    }
-  } catch (error) {
-    const message =
-      errorMessage || (error instanceof Error ? error.message : '');
-    throw new Error(message);
-  }
-};
-
-export const streamGoogleStyleChatFromProxy = async function* (options: {
-  endpoint: string;
-  payload: { stream?: boolean } & Record<string, unknown>;
-  errorMessage?: string;
-}): AsyncGenerator<string> {
-  const { endpoint, payload, errorMessage } = options;
-
-  try {
-    const response = await fetchProxy(endpoint, payload);
-
-    if (!payload?.stream) {
-      const data = await response.json();
-      const content = extractGoogleResponseText(data);
-      if (content) {
-        yield content;
-      }
-      return;
-    }
-
-    const reader = response.body?.getReader();
-    if (!reader) {
-      throw new Error('No response body from proxy');
-    }
-
-    const decoder = new TextDecoder();
-    let buffer = '';
-    let lastText = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      if (!value) continue;
-
-      buffer += decoder.decode(value, { stream: true });
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
-
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const data = line.slice(6).trim();
-        if (!data || data === '[DONE]') continue;
-
-        try {
-          const parsed = JSON.parse(data);
-          const text = extractGoogleResponseText(parsed);
-          if (!text) continue;
-
-          if (text.startsWith(lastText)) {
-            const delta = text.slice(lastText.length);
-            if (delta) yield delta;
-          } else {
-            yield text;
-          }
-          lastText = text;
-        } catch {
-          // ignore malformed chunks
-        }
-      }
     }
   } catch (error) {
     const message =

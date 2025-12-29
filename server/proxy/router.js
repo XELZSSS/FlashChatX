@@ -4,7 +4,6 @@ import { sendJson } from './utils/response.js';
 import { handleApiRequest } from './handlers/apiHandlers.js';
 import {
   handleOpenAIFileUpload,
-  handleGoogleFileUpload,
   handleAnthropicFileUpload,
 } from './handlers/uploadHandlers.js';
 import { handleSaveEnv, handleSaveMemuEnv } from './handlers/envHandlers.js';
@@ -32,10 +31,6 @@ export const createRouter = ctx => async (req, res) => {
 
   if (req.method === 'POST' && pathName === '/api/openai/files') {
     return handleOpenAIFileUpload(req, res, ctx);
-  }
-
-  if (req.method === 'POST' && pathName === '/api/google/files') {
-    return handleGoogleFileUpload(req, res, ctx);
   }
 
   if (req.method === 'POST' && pathName === '/api/anthropic/files') {

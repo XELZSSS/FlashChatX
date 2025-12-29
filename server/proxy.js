@@ -29,6 +29,7 @@ for (const [provider, config] of Object.entries(API_PROVIDERS)) {
 // Log initial configuration to help with debugging
 console.log('[proxy] Initial configuration:', {
   hasOpenAIKey: !!apiKeys.openai,
+  hasXAIKey: !!apiKeys.xai,
   hasMiMoKey: !!apiKeys.mimo,
   hasZKey: !!apiKeys.z,
   hasZIntlKey: !!apiKeys['z-intl'],
@@ -39,7 +40,7 @@ console.log('[proxy] Initial configuration:', {
   hasModelScopeKey: !!apiKeys.modelscope,
   hasMoonshotKey: !!apiKeys.moonshot,
   hasMiniMaxKey: !!apiKeys.minimax,
-  hasGoogleKey: !!apiKeys.google,
+  hasGeminiKey: !!apiKeys.gemini,
   hasAnthropicKey: !!apiKeys.anthropic,
 });
 

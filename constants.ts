@@ -3,6 +3,8 @@ import { Theme, ProviderType, ThinkingLevel } from './types';
 // Model constants for each provider
 export const MODEL_CONFIG = {
   openai: 'gpt-5.2',
+  openrouter: 'openai/gpt-5',
+  xai: 'grok-4-1-fast',
   mimo: 'mimo-v2-flash',
   z: 'glm-4.7',
   'z-intl': 'glm-4.7',
@@ -13,7 +15,7 @@ export const MODEL_CONFIG = {
   modelscope: 'deepseek-ai/DeepSeek-V3',
   moonshot: 'kimi-k2-turbo-preview',
   minimax: 'MiniMax-M2.1',
-  google: 'gemini-2.0-flash-exp',
+  gemini: 'gemini-3-flash-preview',
   anthropic: 'Claude Opus 4.5',
 } as const satisfies Record<ProviderType, string>;
 
@@ -33,6 +35,11 @@ export const LONGCAT_MODELS = {
 export const MOONSHOT_MODELS = {
   default: 'kimi-k2-turbo-preview',
   thinking: 'kimi-k2-thinking-turbo',
+} as const;
+
+export const GEMINI_MODELS = {
+  default: 'gemini-3-flash-preview',
+  thinking: 'gemini-3-pro-preview',
 } as const;
 
 // Individual model exports for backward compatibility

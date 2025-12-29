@@ -10,6 +10,10 @@ interface ImportMetaEnv {
   readonly MODEL_NAME?: string;
   readonly OPENAI_API_KEY?: string;
   readonly OPENAI_MODEL?: string;
+  readonly OPENROUTER_API_KEY?: string;
+  readonly OPENROUTER_MODEL?: string;
+  readonly XAI_API_KEY?: string;
+  readonly XAI_MODEL?: string;
   readonly MIMO_API_KEY?: string;
   readonly MIMO_MODEL?: string;
   readonly DEEPSEEK_API_KEY?: string;

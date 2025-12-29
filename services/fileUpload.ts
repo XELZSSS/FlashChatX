@@ -1,3 +1,4 @@
+import { GoogleGenAI } from '@google/genai';
 import { ProviderConfig } from './providerConfig';
 import { LocalAttachment, ProviderType, UploadedFileReference } from '../types';
 
@@ -5,10 +6,11 @@ const PROXY_BASE_URL = 'http://localhost:8787/api';
 
 const SUPPORTED_UPLOAD_PROVIDERS: ProviderType[] = [
   'openai',
-  'google',
+  'gemini',
   'anthropic',
 ];
 const TOOL_FILE_PROVIDERS: ProviderType[] = [
+  'openrouter',
   'deepseek',
   'z',
   'z-intl',
@@ -19,6 +21,7 @@ const TOOL_FILE_PROVIDERS: ProviderType[] = [
   'longcat',
   'modelscope',
   'openai-compatible',
+  'xai',
 ];
 
 const getFileExtension = (name: string) => {
@@ -94,6 +97,30 @@ export const uploadFilesForProvider = async (
     updateAttachment(attachment.id, { status: 'uploading', error: undefined });
 
     const mimeType = guessMimeType(attachment.file);
+    if (provider === 'gemini') {
+      if (!providerConfig.apiKey) {
+        throw new Error(t('errorMissingApiKey'));
+      }
+
+      const client = new GoogleGenAI({ apiKey: providerConfig.apiKey });
+      const result = await client.files.upload({
+        file: attachment.file,
+        config: { mimeType, displayName: attachment.file.name },
+      });
+
+      uploaded.push({
+        provider,
+        fileId: result.name,
+        fileUri: result.uri || result.name,
+        name: result.displayName || attachment.file.name,
+        size: attachment.file.size,
+        mimeType: result.mimeType || mimeType,
+      });
+
+      updateAttachment(attachment.id, { status: 'uploaded' });
+      continue;
+    }
+
     const buffer = await attachment.file.arrayBuffer();
     const dataBase64 = arrayBufferToBase64(buffer);
 
@@ -122,15 +149,6 @@ export const uploadFilesForProvider = async (
         provider,
         fileId: result.id,
         name: result.filename || attachment.file.name,
-        size: attachment.file.size,
-        mimeType,
-      });
-    } else if (provider === 'google') {
-      uploaded.push({
-        provider,
-        fileId: result.name,
-        fileUri: result.uri || result.name,
-        name: result.displayName || attachment.file.name,
         size: attachment.file.size,
         mimeType,
       });

@@ -2,12 +2,10 @@ import { ProviderConfig, ServiceParams } from '../types';
 import {
   buildOpenAIToolPayload,
   streamAnthropicStyleChatFromProxy,
-  streamGoogleStyleChatFromProxy,
   streamOpenAIStyleChatWithLocalFiles,
 } from './serviceUtils';
 import {
   AnthropicAdapterResult,
-  GoogleAdapterResult,
   OpenAIStyleAdapterResult,
 } from './adapters/types';
 
@@ -66,39 +64,11 @@ export const streamOpenAIStyleProvider = async function* (
 
 type WithModelStream<T> = T & { model: string; stream: boolean };
 
-type GooglePayloadOptions = WithModelStream<GoogleAdapterResult> & {
-  toolPayload?: Record<string, unknown>;
-};
-
 const buildModelStreamPayload = <T extends { model: string; stream: boolean }>(
   options: T
 ) => {
   const { model, stream, ...rest } = options;
   return { model, stream, ...rest };
-};
-
-export const buildGooglePayload = (options: GooglePayloadOptions) => ({
-  ...buildModelStreamPayload({
-    model: options.model,
-    stream: options.stream,
-    contents: options.contents,
-    generationConfig: options.generationConfig,
-    ...(options.systemInstruction
-      ? { systemInstruction: { parts: [{ text: options.systemInstruction }] } }
-      : {}),
-  }),
-  ...(options.toolPayload || {}),
-});
-
-export const streamGoogleProvider = async function* (options: {
-  payload: ReturnType<typeof buildGooglePayload>;
-  params: ServiceParams;
-}): AsyncGenerator<string> {
-  yield* streamGoogleStyleChatFromProxy({
-    endpoint: 'google',
-    payload: options.payload,
-    errorMessage: options.params.errorMessage,
-  });
 };
 
 type AnthropicPayloadOptions = WithModelStream<AnthropicAdapterResult> & {

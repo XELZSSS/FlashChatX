@@ -1,7 +1,7 @@
 // Hooks
 import React from 'react';
 // Icons
-import { Check, ChevronDown } from 'lucide-react';
+import { Check } from 'lucide-react';
 // Types
 import type { Theme, ExtendedUserSettings } from '../../../types';
 
@@ -74,11 +74,6 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
             className="lang-trigger w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-base font-medium transition-colors"
           >
             <span>{settings.language}</span>
-            <ChevronDown
-              className={`w-4 h-4 text-subtle transition-transform duration-200 ${
-                dropdownStates.language ? 'rotate-180' : ''
-              }`}
-            />
           </button>
 
           {dropdownStates.language && (

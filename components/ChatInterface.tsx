@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { Copy, Brain, ChevronDown, Zap, Paperclip } from 'lucide-react';
+import { Copy, Brain, Zap, Paperclip } from 'lucide-react';
 import { ExtendedMessage, TokenUsage } from '../types';
 import { useTranslation } from '../contexts/useTranslation';
 
@@ -91,9 +91,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             <div className="thinking-title">
               <Brain className="w-4 h-4" />
               {t('thinkingProcess')}
-              <ChevronDown
-                className={`w-4 h-4 ml-1 transition-transform duration-200 ${isCollapsed ? 'rotate-180' : ''}`}
-              />
             </div>
           </div>
           <div

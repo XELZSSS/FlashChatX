@@ -99,6 +99,16 @@ export const loadStreamFactory = (provider: string): Promise<StreamFactory> => {
         streamFactoryCache.set(provider, m.streamOpenAICompatibleResponse);
         return m.streamOpenAICompatibleResponse;
       });
+    case 'openrouter':
+      return import('../services/openrouterService').then(m => {
+        streamFactoryCache.set(provider, m.streamOpenRouterResponse);
+        return m.streamOpenRouterResponse;
+      });
+    case 'xai':
+      return import('../services/xaiService').then(m => {
+        streamFactoryCache.set(provider, m.streamXaiResponse);
+        return m.streamXaiResponse;
+      });
     case 'bailing':
       return import('../services/bailingService').then(m => {
         streamFactoryCache.set(provider, m.streamBailingResponse);
@@ -124,10 +134,10 @@ export const loadStreamFactory = (provider: string): Promise<StreamFactory> => {
         streamFactoryCache.set(provider, m.streamMiniMaxResponse);
         return m.streamMiniMaxResponse;
       });
-    case 'google':
-      return import('../services/googleService').then(m => {
-        streamFactoryCache.set(provider, m.streamGoogleResponse);
-        return m.streamGoogleResponse;
+    case 'gemini':
+      return import('../services/geminiService').then(m => {
+        streamFactoryCache.set(provider, m.streamGeminiResponse);
+        return m.streamGeminiResponse;
       });
     case 'anthropic':
       return import('../services/anthropicService').then(m => {

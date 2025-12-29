@@ -1,7 +1,7 @@
 // Hooks
 import React from 'react';
 // Icons
-import { Check, ChevronDown, Trash2 } from 'lucide-react';
+import { Check, Trash2 } from 'lucide-react';
 // Types
 import type { ProviderConfig } from '../../../services/providerConfig';
 import type { ProviderType } from '../../../types';
@@ -77,11 +77,6 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
           className="lang-trigger w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
         >
           <span>{activeProviderLabel}</span>
-          <ChevronDown
-            className={`w-4 h-4 text-subtle transition-transform duration-200 ${
-              dropdownStates.provider ? 'rotate-180' : ''
-            }`}
-          />
         </button>
 
         {dropdownStates.provider && (
@@ -266,7 +261,8 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
       {(providerConfig.provider === 'deepseek' ||
         providerConfig.provider === 'longcat' ||
         providerConfig.provider === 'bailing' ||
-        providerConfig.provider === 'moonshot') && (
+        providerConfig.provider === 'moonshot' ||
+        providerConfig.provider === 'gemini') && (
         <div className="text-sm text-subtle text-center">
           {t('autoModelSwitch')}
         </div>

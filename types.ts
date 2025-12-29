@@ -4,6 +4,8 @@ export type MessageRole = 'user' | 'model';
 // Provider types for AI services
 export type ProviderType =
   | 'openai'
+  | 'openrouter'
+  | 'xai'
   | 'mimo'
   | 'z'
   | 'z-intl'
@@ -14,7 +16,7 @@ export type ProviderType =
   | 'modelscope'
   | 'moonshot'
   | 'minimax'
-  | 'google'
+  | 'gemini'
   | 'anthropic';
 
 // Theme options with explicit string values

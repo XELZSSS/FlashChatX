@@ -5,6 +5,12 @@ export const API_PROVIDERS = {
     targetUrl: 'https://api.openai.com/v1/chat/completions',
     endpoint: '/api/openai',
   },
+  xai: {
+    keyEnvVar: 'XAI_API_KEY',
+    modelEnvVar: 'XAI_MODEL',
+    targetUrl: 'https://api.x.ai/v1/chat/completions',
+    endpoint: '/api/xai',
+  },
   mimo: {
     keyEnvVar: 'MIMO_API_KEY',
     modelEnvVar: 'MIMO_MODEL',
@@ -66,11 +72,11 @@ export const API_PROVIDERS = {
     targetUrl: 'https://api.minimax.chat/v1/chat/completions',
     endpoint: '/api/minimax',
   },
-  google: {
-    keyEnvVar: 'GOOGLE_API_KEY',
-    modelEnvVar: 'GOOGLE_MODEL',
+  gemini: {
+    keyEnvVar: 'GEMINI_API_KEY',
+    modelEnvVar: 'GEMINI_MODEL',
     targetUrl: 'https://generativelanguage.googleapis.com/v1beta/models',
-    endpoint: '/api/google',
+    endpoint: '/api/gemini',
   },
   anthropic: {
     keyEnvVar: 'ANTHROPIC_API_KEY',
@@ -90,6 +96,7 @@ export const PATH_TO_PROVIDER = Object.entries(API_PROVIDERS).reduce(
 
 export const TIME_TOOL_PROVIDERS = new Set([
   'openai',
+  'xai',
   'openai-compatible',
   'deepseek',
   'z',

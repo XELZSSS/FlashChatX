@@ -24,10 +24,10 @@ const performUpstreamRequest = async (
       let headers = { 'Content-Type': 'application/json', ...config.headers };
       let targetUrl = config.targetUrl;
 
-      if (provider === 'google') {
+      if (provider === 'gemini') {
         const model = payload?.model;
         if (!model) {
-          const error = new Error('model is required for google provider');
+          const error = new Error('model is required for gemini provider');
           error.status = 400;
           throw error;
         }
@@ -132,7 +132,7 @@ export const handleApiRequest = async (req, res, provider, parsed, ctx) => {
   }
 
   // Basic input validation to avoid upstream 400s
-  if (provider !== 'google' && provider !== 'anthropic') {
+  if (provider !== 'gemini' && provider !== 'anthropic') {
     if (!Array.isArray(messages)) {
       return sendJson(res, 400, { error: 'messages must be an array' });
     }
@@ -155,7 +155,7 @@ export const handleApiRequest = async (req, res, provider, parsed, ctx) => {
 
   const canUseSystemTimeTool =
     ctx.TIME_TOOL_PROVIDERS.has(provider) &&
-    provider !== 'google' &&
+    provider !== 'gemini' &&
     provider !== 'anthropic';
   const shouldUseSystemTimeTool =
     canUseSystemTimeTool && shouldTriggerSystemTimeTool(normalizedPayload);

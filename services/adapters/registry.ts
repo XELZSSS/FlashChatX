@@ -10,6 +10,7 @@ import { buildModelscopeAdapter } from './modelscopeAdapter';
 import { buildMoonshotAdapter } from './moonshotAdapter';
 import { buildOpenAIAdapter } from './openaiAdapter';
 import { buildOpenAICompatibleAdapter } from './openaiCompatibleAdapter';
+import { buildXaiAdapter } from './xaiAdapter';
 import { buildZAdapter } from './zAdapter';
 import { buildZIntlAdapter } from './zIntlAdapter';
 import {
@@ -30,6 +31,8 @@ const openAIStyleAdapters: Record<
   OpenAIStyleAdapterBuilder | undefined
 > = {
   openai: buildOpenAIAdapter,
+  openrouter: undefined,
+  xai: buildXaiAdapter,
   'openai-compatible': buildOpenAICompatibleAdapter,
   deepseek: buildDeepseekAdapter,
   bailing: buildBailingAdapter,
@@ -41,7 +44,7 @@ const openAIStyleAdapters: Record<
   z: buildZAdapter,
   'z-intl': buildZIntlAdapter,
   // Providers handled by non-OpenAI pipelines
-  google: undefined,
+  gemini: undefined,
   anthropic: undefined,
 };
 
@@ -53,10 +56,10 @@ export const getOpenAIStyleAdapter = (provider: ProviderType) => {
   return adapter;
 };
 
-export const buildGoogleAdapterContext = (
+export const buildGeminiAdapterContext = (
   params: ServiceParams,
   config: GoogleAdapterConfig
-): GoogleAdapterResult => buildGoogleAdapter(params, config);
+): GoogleAdapterResult => buildGoogleAdapter(params, config, 'gemini');
 
 export const buildAnthropicAdapterContext = (
   params: ServiceParams,

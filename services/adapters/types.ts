@@ -1,3 +1,19 @@
+import type { Content, Part } from '@google/genai';
+import type {
+  ContentBlock,
+  ContentBlockParam,
+  MessageParam,
+  ThinkingConfigParam,
+  ToolChoice,
+  ToolUnion,
+} from '@anthropic-ai/sdk/resources/messages';
+import type {
+  BetaContentBlock,
+  BetaContentBlockParam,
+  MessageParam as BetaMessageParam,
+  ToolChoice as BetaToolChoice,
+  ToolUnion as BetaToolUnion,
+} from '@anthropic-ai/sdk/resources/beta/messages';
 import { ProviderConfig, ServiceParams } from '../../types';
 
 export type OpenAIStyleAdapterContext = {
@@ -38,32 +54,9 @@ export type GoogleAdapterResult = {
   systemInstruction?: string;
 };
 
-export type GoogleContentPart =
-  | { text: string }
-  | {
-      fileData: {
-        fileUri: string;
-        mimeType?: string;
-        displayName?: string;
-      };
-    }
-  | {
-      functionCall: {
-        name: string;
-        args?: Record<string, unknown>;
-      };
-    }
-  | {
-      functionResponse: {
-        name: string;
-        response: { content: string };
-      };
-    };
+export type GoogleContentPart = Part;
 
-export type GoogleContent = {
-  role: 'user' | 'model';
-  parts: GoogleContentPart[];
-};
+export type GoogleContent = Content;
 
 export type AnthropicAdapterConfig = {
   temperature?: number;
@@ -77,32 +70,20 @@ export type AnthropicAdapterResult = {
   messages: AnthropicMessage[];
   systemMessage?: string;
   anthropicBeta?: string;
-  thinking?: Record<string, unknown>;
+  thinking?: ThinkingConfigParam;
   temperature?: number;
   top_p?: number;
   top_k?: number;
 };
 
 export type AnthropicContentBlock =
-  | { type: 'text'; text: string }
-  | {
-      type: 'document';
-      source: { type: 'file'; file_id: string };
-      title?: string;
-    }
-  | {
-      type: 'tool_use';
-      id: string;
-      name: string;
-      input?: Record<string, unknown>;
-    }
-  | {
-      type: 'tool_result';
-      tool_use_id: string;
-      content: string;
-    };
+  | ContentBlock
+  | ContentBlockParam
+  | BetaContentBlock
+  | BetaContentBlockParam;
 
-export type AnthropicMessage = {
-  role: 'user' | 'assistant';
-  content: string | AnthropicContentBlock[];
-};
+export type AnthropicMessage = MessageParam | BetaMessageParam;
+
+export type AnthropicTool = ToolUnion | BetaToolUnion;
+
+export type AnthropicToolChoice = ToolChoice | BetaToolChoice;

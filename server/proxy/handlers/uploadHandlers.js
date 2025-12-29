@@ -1,5 +1,4 @@
 import OpenAI, { toFile } from 'openai';
-import { GoogleGenAI } from '@google/genai';
 import Anthropic from '@anthropic-ai/sdk';
 import { parseJsonBody } from '../utils/bodyParser.js';
 import { sendJson } from '../utils/response.js';
@@ -43,46 +42,6 @@ export const handleOpenAIFileUpload = async (req, res, ctx) => {
     });
   } catch (error) {
     console.error('[proxy] OpenAI file upload failed:', error);
-    const status = error.code === 'PAYLOAD_TOO_LARGE' ? 413 : 500;
-    return sendJson(res, status, {
-      error: error.message || 'Upload failed',
-    });
-  }
-};
-
-export const handleGoogleFileUpload = async (req, res, ctx) => {
-  try {
-    const parsed = await parseJsonBody(req, ctx.MAX_UPLOAD_BYTES);
-    const apiKey = parsed?.apiKey || ctx.apiKeys.google;
-    if (!apiKey) {
-      return sendJson(res, 401, {
-        error: 'GOOGLE_API_KEY not set on proxy server.',
-      });
-    }
-
-    if (parsed?.apiKey) {
-      ctx.apiKeys.google = parsed.apiKey;
-    }
-
-    const buffer = decodeBase64Payload(parsed.dataBase64);
-    const fileName = parsed.fileName || 'upload';
-    const mimeType = parsed.mimeType || 'application/octet-stream';
-    const blob = new Blob([buffer], { type: mimeType });
-
-    const client = new GoogleGenAI({ apiKey });
-    const uploaded = await client.files.upload({
-      file: blob,
-      config: { mimeType, displayName: fileName },
-    });
-
-    return sendJson(res, 200, {
-      name: uploaded.name,
-      uri: uploaded.uri,
-      displayName: uploaded.displayName,
-      mimeType: uploaded.mimeType,
-    });
-  } catch (error) {
-    console.error('[proxy] Google file upload failed:', error);
     const status = error.code === 'PAYLOAD_TOO_LARGE' ? 413 : 500;
     return sendJson(res, status, {
       error: error.message || 'Upload failed',

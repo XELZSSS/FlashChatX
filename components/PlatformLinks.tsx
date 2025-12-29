@@ -10,6 +10,8 @@ const PlatformLinks: React.FC = () => {
       name: t('openaiPlatform'),
       url: 'https://platform.openai.com/docs/overview',
     },
+    { name: t('openrouterPlatform'), url: 'https://openrouter.ai/' },
+    { name: t('xaiPlatform'), url: 'https://docs.x.ai/docs/overview' },
     {
       name: t('mimoPlatform'),
       url: 'https://platform.xiaomimimo.com/#/docs/welcome',
