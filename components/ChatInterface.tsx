@@ -115,23 +115,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
     [t, toggleThinkingCollapse]
   );
 
-  const renderThinkingSummary = useCallback(
-    (summary: string | null) => {
-      if (!summary) return null;
-      return (
-        <div className="mt-3 pt-3 border-t border-[var(--border)]">
-          <div className="text-xs uppercase tracking-wide text-subtle mb-1">
-            {t('thinkingSummary')}
-          </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-subtle">
-            {summary}
-          </p>
-        </div>
-      );
-    },
-    [t]
-  );
-
   const renderResponse = useCallback((text: string) => {
     if (!text) return null;
 
@@ -197,7 +180,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                       isThinkingCollapsed
                     )}
                     {renderResponse(responseText)}
-                    {renderThinkingSummary(msg.thinkingSummary ?? null)}
 
                     {showInlineTyping && index === messages.length - 1 && (
                       <div className="flex items-center mt-2 pl-1">

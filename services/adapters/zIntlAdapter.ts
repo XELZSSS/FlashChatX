@@ -13,7 +13,6 @@ export const buildZIntlAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const messages = injectAttachmentPrompt(

@@ -18,77 +18,22 @@ type SystemMessageOptions = {
   useThinking: boolean;
   useSearch: boolean;
   searchPrompt?: string;
-  showThinkingSummary?: boolean;
 };
 
 export const buildSystemMessages = ({
   useSearch: _useSearch,
-  showThinkingSummary: _showThinkingSummary,
 }: SystemMessageOptions): ChatMessage[] => {
   const messages: ChatMessage[] = [];
   void _useSearch;
-  void _showThinkingSummary;
   // Core identity prompts have been removed
 
   return messages;
-};
-
-export const getThinkingSummaryPrompt = (
-  useThinking: boolean,
-  showThinkingSummary?: boolean
-) => {
-  if (!useThinking || !showThinkingSummary) {
-    return '';
-  }
-  return 'After answering, add a short 1-2 sentence summary in <thinking_summary>...</thinking_summary>.';
 };
 
 const appendPromptToText = (content: string, prompt: string) => {
   if (!prompt) return content;
   if (!content.trim()) return prompt;
   return `${content}\n\n${prompt}`;
-};
-
-const findMatchingUserMessageIndex = (
-  messages: ChatMessage[],
-  message?: string
-) => {
-  if (!message) return -1;
-  const target = message.trim();
-  for (let i = messages.length - 1; i >= 0; i -= 1) {
-    if (messages[i].role !== 'user') continue;
-    if (messages[i].content.trim() === target) {
-      return i;
-    }
-  }
-  return -1;
-};
-
-const appendThinkingSummaryPromptToMessages = (
-  messages: ChatMessage[],
-  useThinking: boolean,
-  showThinkingSummary?: boolean,
-  message?: string
-): ChatMessage[] => {
-  const prompt = getThinkingSummaryPrompt(useThinking, showThinkingSummary);
-  if (!prompt) return messages;
-
-  const next = [...messages];
-  const matchedIndex = findMatchingUserMessageIndex(next, message);
-  const targetIndex =
-    matchedIndex !== -1
-      ? matchedIndex
-      : next.map(item => item.role).lastIndexOf('user');
-  if (targetIndex !== -1) {
-    next[targetIndex] = {
-      ...next[targetIndex],
-      content: appendPromptToText(next[targetIndex].content, prompt),
-    };
-    return next;
-  }
-
-  next.push({ role: 'user', content: prompt });
-  return next;
 };
 
 export const mapHistoryToChatMessages = (
@@ -137,80 +82,29 @@ export const buildFinalMessages = (options: {
   message: string;
   useThinking: boolean;
   useSearch: boolean;
-  showThinkingSummary?: boolean;
-}): ChatMessage[] =>
-  appendThinkingSummaryPromptToMessages(
-    [
-      ...buildSystemMessages({
-        useThinking: options.useThinking,
-        useSearch: options.useSearch,
-        showThinkingSummary: options.showThinkingSummary,
-      }),
-      ...mapHistoryToChatMessages(options.history, options.message),
-    ],
-    options.useThinking,
-    options.showThinkingSummary,
-    options.message
-  );
+}): ChatMessage[] => [
+  ...buildSystemMessages({
+    useThinking: options.useThinking,
+    useSearch: options.useSearch,
+  }),
+  ...mapHistoryToChatMessages(options.history, options.message),
+];
 
 export const buildFinalOpenAIMessages = (options: {
   history: HistoryMessage[];
   message?: string;
   useThinking: boolean;
   useSearch: boolean;
-  showThinkingSummary?: boolean;
 }): OpenAIMessage[] => {
-  const prompt = getThinkingSummaryPrompt(
-    options.useThinking,
-    options.showThinkingSummary
-  );
   const messages = [
     ...buildSystemMessages({
       useThinking: options.useThinking,
       useSearch: options.useSearch,
-      showThinkingSummary: options.showThinkingSummary,
     }),
     ...mapHistoryToOpenAIMessages(options.history),
   ];
-
-  if (!prompt) return messages;
-
-  const next = [...messages];
-  const getMessageText = (content: string | OpenAIContentPart[]) =>
-    Array.isArray(content)
-      ? content
-          .filter(part => part.type === 'text')
-          .map(part => part.text)
-          .join('')
-      : content;
-  let targetIndex = -1;
-  if (options.message) {
-    const target = options.message.trim();
-    for (let i = next.length - 1; i >= 0; i -= 1) {
-      if (next[i].role !== 'user') continue;
-      const text = getMessageText(next[i].content).trim();
-      if (text === target) {
-        targetIndex = i;
-        break;
-      }
-    }
-  }
-  if (targetIndex === -1) {
-    targetIndex = next.map(item => item.role).lastIndexOf('user');
-  }
-  if (targetIndex !== -1) {
-    const content = next[targetIndex].content;
-    next[targetIndex] = {
-      ...next[targetIndex],
-      content: Array.isArray(content)
-        ? [...content, { type: 'text', text: `\n\n${prompt}` }]
-        : appendPromptToText(content, prompt),
-    };
-    return next;
-  }
-
-  next.push({ role: 'user', content: prompt });
-  return next;
+  void options.message;
+  return messages;
 };
 
 type TextMessage = { role: string; content: string | OpenAIContentPart[] };

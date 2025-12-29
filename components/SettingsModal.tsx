@@ -378,8 +378,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
           initialProviderSnapshot.showAdvancedParams ||
         config.thinkingBudgetTokens !==
           initialProviderSnapshot.thinkingBudgetTokens ||
-        config.showThinkingSummary !==
-          initialProviderSnapshot.showThinkingSummary ||
         !isToolConfigEqual(
           config.toolConfig,
           initialProviderSnapshot.toolConfig
@@ -536,13 +534,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     }));
   }, []);
 
-  const handleToggleThinkingSummary = useCallback(() => {
-    setProviderConfig(prev => ({
-      ...prev,
-      showThinkingSummary: !prev.showThinkingSummary,
-    }));
-  }, []);
-
   const handleToggleTool = useCallback(
     (toolName: string) => {
       setProviderConfig(prev => {
@@ -655,8 +646,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
         initialProviderSnapshot.showAdvancedParams ||
       providerConfig.thinkingBudgetTokens !==
         initialProviderSnapshot.thinkingBudgetTokens ||
-      providerConfig.showThinkingSummary !==
-        initialProviderSnapshot.showThinkingSummary ||
       !isToolConfigEqual(
         providerConfig.toolConfig,
         initialProviderSnapshot.toolConfig
@@ -811,7 +800,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
                   handleTopKChange={handleTopKChange}
                   handleThinkingBudgetChange={handleThinkingBudgetChange}
                   handleToggleAdvancedParams={handleToggleAdvancedParams}
-                  handleToggleThinkingSummary={handleToggleThinkingSummary}
                   handleToggleStreaming={handleToggleStreaming}
                 />
               )}

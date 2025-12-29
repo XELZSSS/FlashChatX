@@ -37,7 +37,6 @@ type ProviderTabProps = {
     event: React.ChangeEvent<HTMLInputElement>
   ) => void;
   handleToggleAdvancedParams: () => void;
-  handleToggleThinkingSummary: () => void;
   handleToggleStreaming: () => void;
 };
 
@@ -67,7 +66,6 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
   handleTopKChange,
   handleThinkingBudgetChange,
   handleToggleAdvancedParams,
-  handleToggleThinkingSummary,
   handleToggleStreaming,
 }) => {
   return (
@@ -224,44 +222,18 @@ const ProviderTab: React.FC<ProviderTabProps> = ({
         </div>
       )}
 
-      <div className="streaming-toggle-container flex items-start justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">
-        <div className="flex-1">
-          <label className="block text-sm text-text font-medium">
-            {t('showThinkingSummary')}
-          </label>
-          <div className="mt-3 space-y-2">
-            <label className="block text-sm text-subtle">
-              {t('thinkingBudget')}
-            </label>
-            <input
-              type="text"
-              className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
-              placeholder={t('thinkingBudgetPlaceholder')}
-              value={thinkingBudgetInput}
-              onChange={handleThinkingBudgetChange}
-            />
-            <p className="text-xs text-subtle">{t('thinkingBudgetHint')}</p>
-          </div>
-        </div>
-        <button
-          type="button"
-          onClick={handleToggleThinkingSummary}
-          className={`streaming-toggle relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 ${
-            providerConfig.showThinkingSummary
-              ? 'bg-[var(--accent)]'
-              : 'bg-[var(--pill)]'
-          }`}
-          aria-pressed={!!providerConfig.showThinkingSummary}
-          aria-label={t('showThinkingSummary')}
-        >
-          <span
-            className={`streaming-toggle-thumb inline-block h-5 w-5 transform rounded-full toggle-thumb shadow transition-transform duration-200 ${
-              providerConfig.showThinkingSummary
-                ? 'translate-x-5'
-                : 'translate-x-1'
-            }`}
-          />
-        </button>
+      <div className="streaming-toggle-container flex flex-col gap-3 p-4 rounded-xl border border-[var(--border)]">
+        <label className="block text-sm text-text font-medium">
+          {t('thinkingBudget')}
+        </label>
+        <input
+          type="text"
+          className="provider-field w-full rounded-xl border px-4 py-2.5 text-sm focus:outline-none"
+          placeholder={t('thinkingBudgetPlaceholder')}
+          value={thinkingBudgetInput}
+          onChange={handleThinkingBudgetChange}
+        />
+        <p className="text-xs text-subtle">{t('thinkingBudgetHint')}</p>
       </div>
 
       <div className="streaming-toggle-container flex items-center justify-between gap-3 p-4 rounded-xl border border-[var(--border)]">

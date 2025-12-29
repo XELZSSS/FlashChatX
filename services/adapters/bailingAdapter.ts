@@ -7,22 +7,12 @@ export const buildBailingAdapter = (
   context: OpenAIStyleAdapterContext
 ): OpenAIStyleAdapterResult => {
   const { params, config, model } = context;
-  const {
-    history,
-    message,
-    useThinking,
-    useDeepThink,
-    useSearch,
-    thinkingLevel,
-  } = params;
+  const { history, message, useThinking, useSearch, thinkingLevel } = params;
 
   const provider = config.provider;
   let modelToUse = model;
   if (provider === 'bailing') {
-    modelToUse =
-      useThinking || useDeepThink
-        ? BAILING_MODELS.thinking
-        : BAILING_MODELS.default;
+    modelToUse = useThinking ? BAILING_MODELS.thinking : BAILING_MODELS.default;
   }
 
   const baseMessages = buildFinalMessages({
@@ -30,7 +20,6 @@ export const buildBailingAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const hasAttachments = Boolean(params.localAttachments?.length);
@@ -43,7 +32,7 @@ export const buildBailingAdapter = (
     params.localAttachments
   );
   const extraBody = buildThinkingBudgetToggle(
-    useThinking || useDeepThink,
+    useThinking,
     thinkingLevel,
     config.thinkingBudgetTokens
   );

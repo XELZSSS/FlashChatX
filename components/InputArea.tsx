@@ -106,7 +106,7 @@ const InputArea: React.FC<InputAreaProps> = ({
   }, [attachments.length, input, isLoading, isUploading]);
 
   const toggleFlag = useCallback(
-    (key: 'useThinking' | 'useDeepThink' | 'useSearch') => {
+    (key: 'useThinking' | 'useSearch') => {
       setConfig(prev => ({ ...prev, [key]: !prev[key] }));
     },
     [setConfig]

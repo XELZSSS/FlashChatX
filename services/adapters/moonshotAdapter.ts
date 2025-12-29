@@ -7,22 +7,14 @@ export const buildMoonshotAdapter = (
   context: OpenAIStyleAdapterContext
 ): OpenAIStyleAdapterResult => {
   const { params, config, model } = context;
-  const {
-    history,
-    message,
-    useThinking,
-    useDeepThink,
-    useSearch,
-    thinkingLevel,
-  } = params;
+  const { history, message, useThinking, useSearch, thinkingLevel } = params;
 
   const provider = config.provider;
   let modelToUse = model;
   if (provider === 'moonshot') {
-    modelToUse =
-      useThinking || useDeepThink
-        ? MOONSHOT_MODELS.thinking
-        : MOONSHOT_MODELS.default;
+    modelToUse = useThinking
+      ? MOONSHOT_MODELS.thinking
+      : MOONSHOT_MODELS.default;
   }
 
   const baseMessages = buildFinalMessages({
@@ -30,7 +22,6 @@ export const buildMoonshotAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const messages = injectAttachmentPrompt(
@@ -38,7 +29,7 @@ export const buildMoonshotAdapter = (
     params.localAttachments
   );
   const extraBody = buildThinkingBudgetToggle(
-    useThinking || useDeepThink,
+    useThinking,
     thinkingLevel,
     config.thinkingBudgetTokens
   );

@@ -6,12 +6,12 @@
 
 ### 功能概览
 
-- 多供应商模型与统一参数面板（API Key/模型/流式/兼容地址/温度等）
-- 流式回复与思考展示（思考摘要、token 统计）
-- 附件与工具调用（文件读取、可配置权限）
-- 对话管理（多会话/搜索/导入导出）
+- 多供应商模型与统一参数面板
+- 流式回复与思考展示
+- 附件与工具调用
+- 对话管理
 - 搜索增强与 MemU 记忆
-- 桌面体验与个性化（托盘/窗口控制/主题/语言/换算工具）
+- 桌面体验与个性化
 - 清晰错误提示
 
 ### 运行方式
@@ -60,12 +60,12 @@ An open-source cross-platform desktop chat application.
 
 ### Feature Overview
 
-- Multi-provider models with unified settings (API key/model/streaming/base URL/temperature)
-- Streaming replies and thinking display (summary, token usage)
-- Attachments and tool calling (file reading, configurable permissions)
-- Chat management (multi-session, search, import/export)
+- Multi-provider models with unified settings
+- Streaming replies and thinking display
+- Attachments and tool calling
+- Chat management
 - Search augmentation and MemU memory
-- Desktop UX and personalization (tray/window controls/theme/language/calculator)
+- Desktop UX and personalization
 - Clear error messaging
 
 ### How to Run

@@ -1,7 +1,7 @@
 {
   "name": "flashchat-x",
   "private": true,
-  "version": "v1.3.0",
+  "version": "v1.4.0",
   "type": "module",
   "main": "electron/main.js",
   "scripts": {

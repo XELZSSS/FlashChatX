@@ -27,7 +27,6 @@ const defaultConfig: ProviderConfig = {
   stream: true,
   temperature: 0.0,
   showAdvancedParams: false,
-  showThinkingSummary: false,
   toolConfig: getDefaultToolConfig(),
 };
 
@@ -183,9 +182,6 @@ const mergeProviderConfig = (
   if (merged.showAdvancedParams === undefined) {
     merged.showAdvancedParams = base.showAdvancedParams;
   }
-  if (merged.showThinkingSummary === undefined) {
-    merged.showThinkingSummary = base.showThinkingSummary;
-  }
   if (!merged.toolConfig) {
     merged.toolConfig = getDefaultToolConfig();
   } else {
@@ -300,7 +296,6 @@ export const saveProviderConfig = async (
     prev.topK !== config.topK ||
     prev.showAdvancedParams !== config.showAdvancedParams ||
     prev.thinkingBudgetTokens !== config.thinkingBudgetTokens ||
-    prev.showThinkingSummary !== config.showThinkingSummary ||
     !areToolConfigsEqual(prev.toolConfig, config.toolConfig) ||
     store.currentProvider !== config.provider;
 
@@ -331,7 +326,6 @@ export const saveProviderConfig = async (
     lastSavedConfig.topK === config.topK &&
     lastSavedConfig.showAdvancedParams === config.showAdvancedParams &&
     lastSavedConfig.thinkingBudgetTokens === config.thinkingBudgetTokens &&
-    lastSavedConfig.showThinkingSummary === config.showThinkingSummary &&
     areToolConfigsEqual(lastSavedConfig.toolConfig, config.toolConfig);
 
   const forceSave = options?.force === true;

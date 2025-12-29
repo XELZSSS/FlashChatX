@@ -59,7 +59,6 @@ export type StreamCommon = {
   message: string;
   localAttachments?: LocalAttachment[];
   useThinking: boolean;
-  useDeepThink: boolean;
   useSearch: boolean;
   thinkingLevel: ThinkingLevel;
   providerConfig: ProviderConfig;

@@ -25,7 +25,6 @@ export type OpenAIMessage = {
 };
 
 export type GoogleAdapterConfig = {
-  showThinkingSummary?: boolean;
   temperature?: number;
   showAdvancedParams?: boolean;
   topP?: number;
@@ -67,7 +66,6 @@ export type GoogleContent = {
 };
 
 export type AnthropicAdapterConfig = {
-  showThinkingSummary?: boolean;
   temperature?: number;
   showAdvancedParams?: boolean;
   topP?: number;

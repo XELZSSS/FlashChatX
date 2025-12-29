@@ -6,22 +6,14 @@ export const buildMinimaxAdapter = (
   context: OpenAIStyleAdapterContext
 ): OpenAIStyleAdapterResult => {
   const { params, config, model } = context;
-  const {
-    history,
-    message,
-    useThinking,
-    useDeepThink,
-    useSearch,
-    thinkingLevel,
-  } = params;
+  const { history, message, useThinking, useSearch, thinkingLevel } = params;
 
-  const thinkingEnabled = useThinking || useDeepThink;
+  const thinkingEnabled = useThinking;
   const baseMessages = buildFinalMessages({
     history,
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const messages = injectAttachmentPrompt(

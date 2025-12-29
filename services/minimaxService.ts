@@ -4,7 +4,7 @@ import { streamOpenAIStyleProvider } from './requestPipeline';
 import { getOpenAIStyleAdapter } from './adapters/registry';
 
 export const streamMiniMaxResponse = async function* (params: ServiceParams) {
-  const { providerConfig, useThinking, useDeepThink } = params;
+  const { providerConfig, useThinking } = params;
 
   const {
     config,
@@ -18,7 +18,7 @@ export const streamMiniMaxResponse = async function* (params: ServiceParams) {
     model: modelToUse,
     streaming,
   });
-  const thinkingEnabled = useThinking || useDeepThink;
+  const thinkingEnabled = useThinking;
 
   const stripThinkingFromStream = async function* (
     stream: AsyncGenerator<string>

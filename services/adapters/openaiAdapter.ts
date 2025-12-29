@@ -13,7 +13,6 @@ export const buildOpenAIAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const reasoningEffort = resolveOpenAIReasoningEffort(

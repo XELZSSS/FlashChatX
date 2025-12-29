@@ -19,7 +19,6 @@ export const translations = {
     system: 'System',
     language: 'Language',
     enterMessage: 'Please enter your message',
-    deepThink: 'DeepThink',
     thinking: 'Thinking',
     search: 'Web',
     chatSearchPlaceholder: 'Search chats',
@@ -67,9 +66,6 @@ export const translations = {
     thinkingBudgetPlaceholder: 'Auto (from thinking level)',
     thinkingBudgetHint:
       'This is an experimental feature; some providers may be incompatible. Use at your own discretion',
-    showThinkingSummary: 'Show thinking summary',
-    showThinkingSummaryHint: 'Ask the model for a short thinking summary.',
-    thinkingSummary: 'Thinking Summary',
     openai: 'OpenAI',
     mimo: 'Xiaomi MiMo',
     z: 'Z AI',
@@ -224,7 +220,7 @@ export const translations = {
     emojiCategory_holidays_china: 'Chinese Festivals',
     emojiCategory_holidays_religion: 'Religious Holidays',
     projectDescription:
-      'This app only provides API interface configuration for official supplier platforms for chatting. If you encounter an error, use CTRL+SHIFT+I to open the console and view the specific error message, then click the About tab in Settings, find your configured supplier platform, and view the specific error-resolution information.\n\n\nIf you use a provider that auto-switches between thinking/non-thinking models, then when thinking + thinking summary are enabled and you upload a file, the app will switch to a normal model because some thinking models do not support tool/file calls. If you see empty thinking content but a thinking summary is shown, this is not a bug and is expected behavior.',
+      'This app only provides API interface configuration for official supplier platforms for chatting. If you encounter an error, use CTRL+SHIFT+I to open the console and view the specific error message, then click the About tab in Settings, find your configured supplier platform, and view the specific error-resolution information.',
   },
   简体中文: {
     newChat: '开启新对话',
@@ -246,7 +242,6 @@ export const translations = {
     system: '跟随系统',
     language: '语言',
     enterMessage: '请输入内容',
-    deepThink: '深度思考',
     thinking: '思考',
     search: '联网',
     chatSearchPlaceholder: '搜索会话',
@@ -293,9 +288,6 @@ export const translations = {
     thinkingBudgetPlaceholder: '自动（跟随思考程度）',
     thinkingBudgetHint:
       '该功能属于实验性功能，部分供应商可能不兼容，自行考虑是否使用',
-    showThinkingSummary: '显示思考摘要',
-    showThinkingSummaryHint: '让模型输出简短的思考摘要。',
-    thinkingSummary: '思考摘要',
     openai: 'OpenAI',
     mimo: '小米 MiMo',
     z: 'Z AI',
@@ -441,7 +433,7 @@ export const translations = {
     emojiCategory_holidays_china: '中国节日',
     emojiCategory_holidays_religion: '宗教节日',
     projectDescription:
-      '本应用只提供官方供应商平台的api接口配置进行聊天，如遇到错误，使用CTRL+SHIFT+I打开控制台查看具体的报错消息，然后点击设置里面的关于标签，找到您配置的供应商平台，查看具体的的错误消息解决办法。\n\n\n如果您使用的是支持自动切换思考/非思考的供应商，在开启思考+思考摘要功能时上传文件会自动切换成普通模型，因为部分思考模型不支持工具/文件调用。如果思考内容为空但显示了思考摘要，这不是BUG，是正常现象。',
+      '本应用只提供官方供应商平台的api接口配置进行聊天，如遇到错误，使用CTRL+SHIFT+I打开控制台查看具体的报错消息，然后点击设置里面的关于标签，找到您配置的供应商平台，查看具体的的错误消息解决办法。',
   },
 };
 

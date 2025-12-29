@@ -13,7 +13,6 @@ export const buildModelscopeAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const messages = injectAttachmentPrompt(

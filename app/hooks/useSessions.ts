@@ -51,9 +51,6 @@ export const useSessions = ({
         if (message.responseContent?.toLowerCase().includes(query)) {
           return true;
         }
-        if (message.thinkingSummary?.toLowerCase().includes(query)) {
-          return true;
-        }
         if (message.thinkingContent?.toLowerCase().includes(query)) {
           return true;
         }

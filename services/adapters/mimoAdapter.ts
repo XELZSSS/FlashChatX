@@ -13,7 +13,6 @@ export const buildMimoAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const messages = injectAttachmentPrompt(

@@ -31,7 +31,6 @@ export interface Message {
   readonly attachments?: UploadedFileReference[];
   readonly isThinking?: boolean;
   readonly thinkingContent?: string; // Deep thinking content
-  readonly thinkingSummary?: string; // Short thinking summary
   readonly responseContent?: string; // Final response content
   readonly isThinkingCollapsed?: boolean; // Whether thinking content is collapsed
 }
@@ -48,7 +47,6 @@ export interface ChatSession {
 // Chat configuration with descriptive naming
 export interface ChatConfig {
   readonly useThinking: boolean;
-  readonly useDeepThink: boolean;
   readonly useSearch: boolean;
   readonly thinkingLevel: ThinkingLevel;
 }
@@ -78,7 +76,6 @@ export interface ProviderConfig {
   topK?: number;
   showAdvancedParams?: boolean;
   thinkingBudgetTokens?: number;
-  showThinkingSummary?: boolean;
   toolConfig?: ToolPermissionConfig;
 }
 
@@ -92,7 +89,6 @@ export interface ServiceParams {
   readonly message: string;
   readonly localAttachments?: LocalAttachment[];
   readonly useThinking: boolean;
-  readonly useDeepThink: boolean;
   readonly useSearch: boolean;
   readonly thinkingLevel: ThinkingLevel;
   readonly errorMessage?: string;

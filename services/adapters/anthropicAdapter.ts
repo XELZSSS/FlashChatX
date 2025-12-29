@@ -1,8 +1,5 @@
 import { ServiceParams, UploadedFileReference } from '../../types';
-import {
-  buildSystemMessages,
-  getThinkingSummaryPrompt,
-} from '../messageBuilder';
+import { buildSystemMessages } from '../messageBuilder';
 import { resolveThinkingBudget } from '../serviceUtils';
 import {
   AnthropicAdapterConfig,
@@ -41,7 +38,6 @@ export const buildAnthropicAdapter = (
   const systemMessages = buildSystemMessages({
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
   const systemMessage =
     systemMessages.length > 0 ? systemMessages[0].content : undefined;
@@ -55,49 +51,6 @@ export const buildAnthropicAdapter = (
           : item.content,
     })
   );
-
-  const thinkingSummaryPrompt = getThinkingSummaryPrompt(
-    useThinking,
-    config.showThinkingSummary
-  );
-  if (thinkingSummaryPrompt) {
-    const targetText = params.message?.trim() || '';
-    const getText = (content: AnthropicContentBlock[] | string) =>
-      Array.isArray(content)
-        ? content
-            .filter(block => block.type === 'text')
-            .map(block => ('text' in block ? block.text || '' : ''))
-            .join('')
-            .trim()
-        : String(content || '').trim();
-    let targetIndex = -1;
-    if (targetText) {
-      for (let i = finalMessages.length - 1; i >= 0; i -= 1) {
-        if (finalMessages[i].role !== 'user') continue;
-        if (getText(finalMessages[i].content) === targetText) {
-          targetIndex = i;
-          break;
-        }
-      }
-    }
-    if (targetIndex === -1) {
-      for (let i = finalMessages.length - 1; i >= 0; i -= 1) {
-        if (finalMessages[i].role === 'user') {
-          targetIndex = i;
-          break;
-        }
-      }
-    }
-    if (targetIndex !== -1) {
-      const content = finalMessages[targetIndex].content;
-      finalMessages[targetIndex] = {
-        ...finalMessages[targetIndex],
-        content: Array.isArray(content)
-          ? [...content, { type: 'text', text: `\n\n${thinkingSummaryPrompt}` }]
-          : `${String(content || '')}\n\n${thinkingSummaryPrompt}`,
-      };
-    }
-  }
 
   const hasFileAttachments = history.some(
     item =>

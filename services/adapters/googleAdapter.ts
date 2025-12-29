@@ -1,8 +1,5 @@
 import { ServiceParams, UploadedFileReference } from '../../types';
-import {
-  buildInstructionText,
-  getThinkingSummaryPrompt,
-} from '../messageBuilder';
+import { buildInstructionText } from '../messageBuilder';
 import { resolveThinkingBudget } from '../serviceUtils';
 import {
   GoogleAdapterConfig,
@@ -66,51 +63,7 @@ export const buildGoogleAdapter = (
   const systemInstruction = buildInstructionText({
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
-
-  const thinkingSummaryPrompt = getThinkingSummaryPrompt(
-    useThinking,
-    config.showThinkingSummary
-  );
-  if (thinkingSummaryPrompt) {
-    const targetText = message.trim();
-    const findText = (parts: GoogleContentPart[]) =>
-      parts
-        .map(part => ('text' in part ? part.text || '' : ''))
-        .join('')
-        .trim();
-    let targetIndex = -1;
-    if (targetText) {
-      for (let i = contents.length - 1; i >= 0; i -= 1) {
-        if (contents[i].role !== 'user') continue;
-        if (findText(contents[i].parts) === targetText) {
-          targetIndex = i;
-          break;
-        }
-      }
-    }
-    if (targetIndex === -1) {
-      const lastUserIndex = [...contents]
-        .reverse()
-        .findIndex(item => item.role === 'user');
-      targetIndex =
-        lastUserIndex === -1 ? -1 : contents.length - 1 - lastUserIndex;
-    }
-
-    if (targetIndex === -1) {
-      contents.push({
-        role: 'user',
-        parts: [{ text: thinkingSummaryPrompt }],
-      });
-    } else {
-      const target = contents[targetIndex];
-      contents[targetIndex] = {
-        ...target,
-        parts: [...target.parts, { text: `\n\n${thinkingSummaryPrompt}` }],
-      };
-    }
-  }
 
   const generationConfig = {
     temperature: config.temperature ?? 0,

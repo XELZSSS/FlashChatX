@@ -332,69 +332,74 @@ const AppContent: React.FC<{
         <TitleBar />
         <div className="flex-1 flex flex-col relative h-full overflow-hidden">
           {/* Content Area */}
-          {isRestoring ? (
-            // Loading State: Show loading indicator while restoring state
-            <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
-              <div className="flex flex-col items-center justify-center w-full max-w-3xl">
-                <div className="mb-8 text-center">
-                  <div className="typing-indicator">
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
+          <div
+            className="chat-transition flex-1 flex flex-col"
+            data-state={showWelcome ? 'welcome' : 'chat'}
+          >
+            {isRestoring ? (
+              // Loading State: Show loading indicator while restoring state
+              <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
+                <div className="flex flex-col items-center justify-center w-full max-w-3xl">
+                  <div className="mb-8 text-center">
+                    <div className="typing-indicator">
+                      <div className="typing-dot"></div>
+                      <div className="typing-dot"></div>
+                      <div className="typing-dot"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ) : showWelcome ? (
-            // Welcome State: Centered Input
-            <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
-              <div className="flex flex-col items-center justify-center w-full max-w-3xl">
-                <div className="mb-8 text-center">
-                  <h1 className="text-2xl font-semibold text-muted mb-2">
-                    {t('welcomeTitle')}
-                  </h1>
+            ) : showWelcome ? (
+              // Welcome State: Centered Input
+              <div className="flex-1 flex flex-col items-center justify-center p-4 w-full">
+                <div className="flex flex-col items-center justify-center w-full max-w-3xl">
+                  <div className="mb-8 text-center">
+                    <h1 className="text-2xl font-semibold text-muted mb-2">
+                      {t('welcomeTitle')}
+                    </h1>
+                  </div>
+                  <InputArea
+                    input={input}
+                    setInput={setInput}
+                    onSend={handleSendMessage}
+                    isLoading={isLoading}
+                    isUploading={isUploading}
+                    showEmojiButton={false}
+                    config={chatConfig}
+                    setConfig={setChatConfig}
+                    attachments={attachments}
+                    onAddAttachments={handleAddAttachments}
+                    onRemoveAttachment={handleRemoveAttachment}
+                  />
                 </div>
-                <InputArea
-                  input={input}
-                  setInput={setInput}
-                  onSend={handleSendMessage}
-                  isLoading={isLoading}
-                  isUploading={isUploading}
-                  showEmojiButton={false}
-                  config={chatConfig}
-                  setConfig={setChatConfig}
-                  attachments={attachments}
-                  onAddAttachments={handleAddAttachments}
-                  onRemoveAttachment={handleRemoveAttachment}
-                />
               </div>
-            </div>
-          ) : (
-            // Chat State: Input at Bottom
-            <>
-              <ChatInterface
-                messages={displayMessages}
-                isLoading={isLoading}
-                onUpdateMessage={updateMessage}
-                cumulativeTokenUsage={cumulativeTokenUsage}
-              />
-              <div className="w-full z-10 flex-shrink-0 absolute bottom-0 left-0 right-0">
-                <InputArea
-                  input={input}
-                  setInput={setInput}
-                  onSend={handleSendMessage}
+            ) : (
+              // Chat State: Input at Bottom
+              <>
+                <ChatInterface
+                  messages={displayMessages}
                   isLoading={isLoading}
-                  isUploading={isUploading}
-                  showEmojiButton
-                  config={chatConfig}
-                  setConfig={setChatConfig}
-                  attachments={attachments}
-                  onAddAttachments={handleAddAttachments}
-                  onRemoveAttachment={handleRemoveAttachment}
+                  onUpdateMessage={updateMessage}
+                  cumulativeTokenUsage={cumulativeTokenUsage}
                 />
-              </div>
-            </>
-          )}
+                <div className="w-full z-10 flex-shrink-0 absolute bottom-0 left-0 right-0">
+                  <InputArea
+                    input={input}
+                    setInput={setInput}
+                    onSend={handleSendMessage}
+                    isLoading={isLoading}
+                    isUploading={isUploading}
+                    showEmojiButton
+                    config={chatConfig}
+                    setConfig={setChatConfig}
+                    attachments={attachments}
+                    onAddAttachments={handleAddAttachments}
+                    onRemoveAttachment={handleRemoveAttachment}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

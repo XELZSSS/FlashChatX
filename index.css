@@ -767,6 +767,20 @@ button.sidebar-newchat:hover {
   background: var(--bg);
 }
 
+/* Smooth welcome -> chat transition */
+.chat-transition {
+  opacity: 1;
+  transform: scale(1);
+  transition:
+    opacity 180ms ease-out,
+    transform 180ms ease-out;
+}
+
+.chat-transition[data-state='welcome'] {
+  opacity: 0.985;
+  transform: scale(0.998);
+}
+
 .sidebar-backdrop,
 .SettingsModal,
 .ConfirmDialog,

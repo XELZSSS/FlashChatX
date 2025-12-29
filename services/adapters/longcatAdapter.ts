@@ -7,22 +7,12 @@ export const buildLongcatAdapter = (
   context: OpenAIStyleAdapterContext
 ): OpenAIStyleAdapterResult => {
   const { params, config, model } = context;
-  const {
-    history,
-    message,
-    useThinking,
-    useDeepThink,
-    useSearch,
-    thinkingLevel,
-  } = params;
+  const { history, message, useThinking, useSearch, thinkingLevel } = params;
 
   const provider = config.provider;
   let modelToUse = model;
   if (provider === 'longcat') {
-    modelToUse =
-      useThinking || useDeepThink
-        ? LONGCAT_MODELS.thinking
-        : LONGCAT_MODELS.default;
+    modelToUse = useThinking ? LONGCAT_MODELS.thinking : LONGCAT_MODELS.default;
   }
 
   const baseMessages = buildFinalMessages({
@@ -30,7 +20,6 @@ export const buildLongcatAdapter = (
     message,
     useThinking,
     useSearch,
-    showThinkingSummary: config.showThinkingSummary,
   });
 
   const hasAttachments = Boolean(params.localAttachments?.length);

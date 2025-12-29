@@ -120,9 +120,6 @@ export const useChatFormatters = ({
         ...(extras.thinkingContent
           ? { thinkingContent: extras.thinkingContent }
           : {}),
-        ...(extras.thinkingSummary
-          ? { thinkingSummary: extras.thinkingSummary }
-          : {}),
         ...(extras.responseContent
           ? { responseContent: extras.responseContent }
           : {}),
@@ -156,7 +153,6 @@ export const useChatFormatters = ({
                   attachments: msgData.attachments,
                   isThinking: msgData.isThinking,
                   thinkingContent: msgData.thinkingContent,
-                  thinkingSummary: msgData.thinkingSummary,
                   responseContent: msgData.responseContent,
                   isThinkingCollapsed: msgData.isThinkingCollapsed,
                   tokenUsage: msgData.tokenUsage,
