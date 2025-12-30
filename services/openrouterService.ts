@@ -305,6 +305,7 @@ export const streamOpenRouterResponse = async function* (
       message: params.message,
       useThinking,
       useSearch: params.useSearch,
+      language: params.language,
     });
     const messages = injectAttachmentPrompt(
       baseMessages,

@@ -48,6 +48,7 @@ const InputArea: React.FC<InputAreaProps> = ({
   onRemoveAttachment,
 }) => {
   const { t } = useTranslation();
+  const containerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const emojiPickerRef = useRef<HTMLDivElement>(null);
@@ -69,6 +70,35 @@ const InputArea: React.FC<InputAreaProps> = ({
     const newHeight = Math.min(textarea.scrollHeight, 200);
     textarea.style.height = `${newHeight}px`;
   }, [input]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const updateHeight = () => {
+      const height = container.offsetHeight || 0;
+      document.documentElement.style.setProperty(
+        '--chat-input-height',
+        `${height}px`
+      );
+    };
+
+    updateHeight();
+
+    let observer: globalThis.ResizeObserver | null = null;
+    if ('ResizeObserver' in window) {
+      const Observer = window.ResizeObserver;
+      observer = new Observer(updateHeight);
+      observer.observe(container);
+    }
+
+    window.addEventListener('resize', updateHeight);
+
+    return () => {
+      window.removeEventListener('resize', updateHeight);
+      if (observer) observer.disconnect();
+    };
+  }, [attachments.length, isEmojiOpen, isUploading, showEmojiButton]);
 
   useEffect(() => {
     if (!isEmojiOpen) return;
@@ -208,7 +238,10 @@ const InputArea: React.FC<InputAreaProps> = ({
   );
 
   return (
-    <div className="w-full max-w-5xl mx-auto px-4 pb-4 transition-all duration-300">
+    <div
+      ref={containerRef}
+      className="w-full max-w-5xl mx-auto px-4 pb-4 transition-all duration-300"
+    >
       <div className="chat-input-shell input-shell rounded-[26px] transition-all duration-200 p-4 relative">
         {showEmojiButton && isEmojiOpen && (
           <div

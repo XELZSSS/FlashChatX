@@ -753,56 +753,66 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
     return;
   }
 
-  const toolResults = await Promise.all(
-    toolCalls.map(async (toolCall: OpenAIToolCall) => {
-      let content = '';
-      try {
-        const args = toolCall?.function?.arguments
-          ? JSON.parse(toolCall.function.arguments)
-          : {};
-        const toolName = toolCall?.function?.name;
-        if (toolName === READ_FILE_TOOL_NAME) {
-          const attachment = findAttachment(attachments, args);
-          if (!attachment) {
-            content = `File not found: ${args.file_name || args.file_id || 'unknown'}`;
-          } else {
-            const { parseFileToText } = await import('../utils/fileParser');
-            content = await parseFileToText(attachment.file);
-          }
-        } else if (toolName === WEB_SEARCH_TOOL_NAME) {
-          const query = typeof args.query === 'string' ? args.query.trim() : '';
-          if (!query) {
-            content = 'Search query is required.';
-          } else {
-            const searchResult = await searchAndFormat({
-              query,
-              site: typeof args.site === 'string' ? args.site : undefined,
-              filetype:
-                typeof args.filetype === 'string' ? args.filetype : undefined,
-              fetch_full: normalizeOptionalBoolean(args.fetch_full),
-              timeout_ms: normalizeOptionalNumber(args.timeout_ms),
-              limit: normalizeOptionalNumber(args.limit),
-              page: normalizeOptionalNumber(args.page),
-            });
-            content = searchResult || 'Search failed.';
-          }
-        } else if (toolName === SYSTEM_TIME_TOOL_NAME) {
-          content = buildSystemTimeToolResult(args?.format);
-        } else {
-          content = `Unsupported tool: ${toolName || 'unknown'}`;
-        }
-      } catch (error) {
-        content =
-          error instanceof Error ? error.message : 'Tool execution failed.';
-      }
+  const toolResults: Array<{
+    role: 'tool';
+    tool_call_id: string;
+    content: string;
+  }> = [];
+  let searchExecuted = false;
+  let cachedSearchResult = '';
 
-      return {
-        role: 'tool',
-        tool_call_id: toolCall.id,
-        content,
-      };
-    })
-  );
+  for (const toolCall of toolCalls) {
+    let content = '';
+    try {
+      const args = toolCall?.function?.arguments
+        ? JSON.parse(toolCall.function.arguments)
+        : {};
+      const toolName = toolCall?.function?.name;
+      if (toolName === READ_FILE_TOOL_NAME) {
+        const attachment = findAttachment(attachments, args);
+        if (!attachment) {
+          content = `File not found: ${args.file_name || args.file_id || 'unknown'}`;
+        } else {
+          const { parseFileToText } = await import('../utils/fileParser');
+          content = await parseFileToText(attachment.file);
+        }
+      } else if (toolName === WEB_SEARCH_TOOL_NAME) {
+        const query = typeof args.query === 'string' ? args.query.trim() : '';
+        if (!query) {
+          content = 'Search query is required.';
+        } else if (!searchExecuted) {
+          searchExecuted = true;
+          const searchResult = await searchAndFormat({
+            query,
+            site: typeof args.site === 'string' ? args.site : undefined,
+            filetype:
+              typeof args.filetype === 'string' ? args.filetype : undefined,
+            fetch_full: normalizeOptionalBoolean(args.fetch_full),
+            timeout_ms: normalizeOptionalNumber(args.timeout_ms),
+            limit: 3,
+            page: normalizeOptionalNumber(args.page),
+          });
+          cachedSearchResult = searchResult || 'Search failed.';
+          content = cachedSearchResult;
+        } else {
+          content = cachedSearchResult || 'Search already performed.';
+        }
+      } else if (toolName === SYSTEM_TIME_TOOL_NAME) {
+        content = buildSystemTimeToolResult(args?.format);
+      } else {
+        content = `Unsupported tool: ${toolName || 'unknown'}`;
+      }
+    } catch (error) {
+      content =
+        error instanceof Error ? error.message : 'Tool execution failed.';
+    }
+
+    toolResults.push({
+      role: 'tool',
+      tool_call_id: toolCall.id,
+      content,
+    });
+  }
 
   const baseMessages = payload.messages || [];
   const messages = [...baseMessages, assistantMessage, ...toolResults];

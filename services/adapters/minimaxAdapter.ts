@@ -14,6 +14,7 @@ export const buildMinimaxAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const messages = injectAttachmentPrompt(

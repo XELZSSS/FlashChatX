@@ -20,6 +20,7 @@ export const buildBailingAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const hasAttachments = Boolean(params.localAttachments?.length);

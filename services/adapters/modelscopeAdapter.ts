@@ -13,6 +13,7 @@ export const buildModelscopeAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const messages = injectAttachmentPrompt(

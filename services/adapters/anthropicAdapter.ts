@@ -38,6 +38,7 @@ export const buildAnthropicAdapter = (
   const systemMessages = buildSystemMessages({
     useThinking,
     useSearch,
+    language: params.language,
   });
   const systemMessage =
     systemMessages.length > 0 ? systemMessages[0].content : undefined;

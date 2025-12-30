@@ -93,6 +93,7 @@ export interface ServiceParams {
   readonly useThinking: boolean;
   readonly useSearch: boolean;
   readonly thinkingLevel: ThinkingLevel;
+  readonly language?: string;
   readonly errorMessage?: string;
   readonly providerConfig?: ProviderConfig;
 }

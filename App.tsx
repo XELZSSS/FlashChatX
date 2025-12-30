@@ -36,7 +36,7 @@ const AppContent: React.FC<{
   settings: ExtendedUserSettings;
   setSettings: (s: ExtendedUserSettings) => void;
 }> = ({ settings, setSettings }) => {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   // Core UI state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [input, setInput] = useState('');
@@ -115,6 +115,7 @@ const AppContent: React.FC<{
   const { createProviderStream, processStreamAndUpdateMessages } =
     useChatStream({
       t,
+      language,
       chatConfigRef,
       sessionsRef,
       updateSessionMessages,
@@ -306,6 +307,19 @@ const AppContent: React.FC<{
     };
   }, [isRenameDialogOpen, renameVisible]);
 
+  const chatTransitionLockUntilRef = useRef(0);
+  const previousShowWelcomeRef = useRef(showWelcome);
+
+  useEffect(() => {
+    const wasWelcome = previousShowWelcomeRef.current;
+    if (showWelcome) {
+      chatTransitionLockUntilRef.current = 0;
+    } else if (wasWelcome) {
+      chatTransitionLockUntilRef.current = Date.now() + 200;
+    }
+    previousShowWelcomeRef.current = showWelcome;
+  }, [showWelcome]);
+
   return (
     <div className="app-shell flex h-screen">
       <Sidebar
@@ -330,10 +344,10 @@ const AppContent: React.FC<{
 
       <div className="flex-1 flex flex-col min-h-0">
         <TitleBar />
-        <div className="flex-1 flex flex-col relative h-full overflow-hidden">
+        <div className="flex-1 flex flex-col relative h-full min-h-0 overflow-hidden">
           {/* Content Area */}
           <div
-            className="chat-transition flex-1 flex flex-col"
+            className="chat-transition flex-1 flex flex-col min-h-0"
             data-state={showWelcome ? 'welcome' : 'chat'}
           >
             {isRestoring ? (
@@ -379,6 +393,7 @@ const AppContent: React.FC<{
                 <ChatInterface
                   messages={displayMessages}
                   isLoading={isLoading}
+                  scrollLockUntilRef={chatTransitionLockUntilRef}
                   onUpdateMessage={updateMessage}
                   cumulativeTokenUsage={cumulativeTokenUsage}
                 />

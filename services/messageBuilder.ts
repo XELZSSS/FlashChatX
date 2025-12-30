@@ -18,14 +18,31 @@ type SystemMessageOptions = {
   useThinking: boolean;
   useSearch: boolean;
   searchPrompt?: string;
+  language?: string;
+};
+
+const buildLanguageInstruction = (language?: string) => {
+  if (!language) return '';
+  if (language === '简体中文') {
+    return '请使用简体中文回复用户。';
+  }
+  if (language === 'English') {
+    return 'Please respond in English.';
+  }
+  return `Please respond in ${language}.`;
 };
 
 export const buildSystemMessages = ({
   useSearch: _useSearch,
+  language,
 }: SystemMessageOptions): ChatMessage[] => {
   const messages: ChatMessage[] = [];
   void _useSearch;
   // Core identity prompts have been removed
+  const languageInstruction = buildLanguageInstruction(language);
+  if (languageInstruction) {
+    messages.push({ role: 'system', content: languageInstruction });
+  }
 
   return messages;
 };
@@ -82,10 +99,12 @@ export const buildFinalMessages = (options: {
   message: string;
   useThinking: boolean;
   useSearch: boolean;
+  language?: string;
 }): ChatMessage[] => [
   ...buildSystemMessages({
     useThinking: options.useThinking,
     useSearch: options.useSearch,
+    language: options.language,
   }),
   ...mapHistoryToChatMessages(options.history, options.message),
 ];
@@ -95,11 +114,13 @@ export const buildFinalOpenAIMessages = (options: {
   message?: string;
   useThinking: boolean;
   useSearch: boolean;
+  language?: string;
 }): OpenAIMessage[] => {
   const messages = [
     ...buildSystemMessages({
       useThinking: options.useThinking,
       useSearch: options.useSearch,
+      language: options.language,
     }),
     ...mapHistoryToOpenAIMessages(options.history),
   ];

@@ -70,6 +70,7 @@ export const buildGoogleAdapter = (
   const systemInstruction = buildInstructionText({
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const generationConfig = {

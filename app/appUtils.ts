@@ -61,6 +61,7 @@ export type StreamCommon = {
   useThinking: boolean;
   useSearch: boolean;
   thinkingLevel: ThinkingLevel;
+  language?: string;
   providerConfig: ProviderConfig;
   thinkingProcessLabel: string;
   finalAnswerLabel: string;

@@ -13,6 +13,7 @@ export const buildZAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const messages = injectAttachmentPrompt(

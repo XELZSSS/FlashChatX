@@ -53,7 +53,7 @@ export const performSearch = async (
 
     const payload = {
       query: params.query,
-      limit: params.limit ?? 5,
+      limit: params.limit ?? 3,
       page: params.page || 1,
       site: params.site || '',
       filetype: params.filetype || '',
@@ -134,8 +134,8 @@ export const formatSearchResults = (searchResponse: SearchResponse): string => {
     return `No relevant information found about "${searchResponse.query}".`;
   }
 
-  // Return only the top 5 most relevant results to provide concise information for AI
-  const topResults = searchResponse.results.slice(0, 5);
+  // Return only the top 3 most relevant results to provide concise information for AI
+  const topResults = searchResponse.results.slice(0, 3);
 
   let formattedText = `Based on the search results for "${searchResponse.query}", here is the relevant information:\n\n`;
 

@@ -6,6 +6,7 @@ import { useTranslation } from '../contexts/useTranslation';
 interface ChatInterfaceProps {
   readonly messages: ExtendedMessage[];
   readonly isLoading: boolean;
+  readonly scrollLockUntilRef?: React.MutableRefObject<number>;
   readonly onUpdateMessage?: (
     messageId: string,
     updates: Partial<ExtendedMessage>
@@ -16,30 +17,80 @@ interface ChatInterfaceProps {
 const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages,
   isLoading,
+  scrollLockUntilRef,
   onUpdateMessage,
   cumulativeTokenUsage,
 }) => {
   const { t } = useTranslation();
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [showCopySuccess, setShowCopySuccess] = useState(false);
   const preventAutoScrollRef = useRef(false);
   const previousMessagesLength = useRef(messages.length);
   const isInitialLoadRef = useRef(true);
+  const scrollAnimRef = useRef<number | null>(null);
+  const scrollTargetRef = useRef<number | null>(null);
+
+  const cancelScrollAnimation = useCallback(() => {
+    if (scrollAnimRef.current !== null) {
+      window.cancelAnimationFrame(scrollAnimRef.current);
+      scrollAnimRef.current = null;
+    }
+  }, []);
+
+  const smoothScrollToBottom = useCallback(
+    (durationMs: number) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const target = container.scrollHeight - container.clientHeight;
+      if (target <= 0) return;
+      if (scrollTargetRef.current === target) return;
+
+      cancelScrollAnimation();
+      scrollTargetRef.current = target;
+
+      const start = container.scrollTop;
+      const delta = target - start;
+      const startTime = performance.now();
+
+      const step = (now: number) => {
+        const elapsed = now - startTime;
+        const progress = Math.min(1, elapsed / durationMs);
+        const eased = progress * (2 - progress);
+        container.scrollTop = start + delta * eased;
+        if (progress < 1) {
+          scrollAnimRef.current = window.requestAnimationFrame(step);
+        } else {
+          scrollAnimRef.current = null;
+        }
+      };
+
+      scrollAnimRef.current = window.requestAnimationFrame(step);
+    },
+    [cancelScrollAnimation]
+  );
 
   useEffect(() => {
+    const lockUntil = scrollLockUntilRef?.current || 0;
+    const isScrollLocked = Date.now() < lockUntil;
     const hasNewMessages = messages.length > previousMessagesLength.current;
     const shouldScroll =
       !preventAutoScrollRef.current &&
+      !isScrollLocked &&
       (hasNewMessages || isLoading || isInitialLoadRef.current);
 
     if (shouldScroll) {
-      endOfMessagesRef.current?.scrollIntoView({ behavior: 'auto' });
+      smoothScrollToBottom(isLoading ? 220 : 180);
     }
 
     previousMessagesLength.current = messages.length;
     preventAutoScrollRef.current = false;
     isInitialLoadRef.current = false;
-  }, [messages, isLoading]);
+  }, [messages, isLoading, scrollLockUntilRef, smoothScrollToBottom]);
+
+  useEffect(() => {
+    return () => cancelScrollAnimation();
+  }, [cancelScrollAnimation]);
 
   const handleCopyMessage = useCallback((content: string) => {
     navigator.clipboard
@@ -145,7 +196,10 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
   }
 
   return (
-    <div className="chat-interface flex-1 overflow-y-auto p-4 pb-40 space-y-6 scroll-smooth relative">
+    <div
+      ref={containerRef}
+      className="chat-interface flex-1 min-h-0 overflow-y-auto p-4 space-y-6 relative"
+    >
       {messages.map((msg, index) => {
         const isUser = msg.role === 'user';
         const isThinkingCollapsed = !!msg.isThinkingCollapsed;

@@ -19,6 +19,7 @@ export const buildDeepseekAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const hasAttachments = Boolean(params.localAttachments?.length);

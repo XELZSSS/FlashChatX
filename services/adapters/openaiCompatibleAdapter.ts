@@ -16,6 +16,7 @@ export const buildOpenAICompatibleAdapter = (
     message,
     useThinking,
     useSearch,
+    language: params.language,
   });
 
   const messages = injectAttachmentPrompt(

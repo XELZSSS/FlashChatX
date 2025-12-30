@@ -15,8 +15,34 @@ import type {
   TokenUsage,
 } from '../../types';
 
+const resolveLanguageFromText = (text: string, fallback: string) => {
+  const trimmed = text.trim();
+  if (!trimmed) return fallback;
+  if (/[\u4e00-\u9fff]/.test(trimmed)) return '简体中文';
+  if (/[A-Za-z]/.test(trimmed)) return 'English';
+  return fallback;
+};
+
+const resolveLanguageForReply = (
+  message: string,
+  history: ReturnType<typeof buildHistory>,
+  fallback: string
+) => {
+  if (message.trim()) {
+    return resolveLanguageFromText(message, fallback);
+  }
+  for (let i = history.length - 1; i >= 0; i -= 1) {
+    if (history[i]?.role !== 'user') continue;
+    const content = history[i]?.content || '';
+    if (!content.trim()) continue;
+    return resolveLanguageFromText(content, fallback);
+  }
+  return fallback;
+};
+
 type UseChatStreamOptions = {
   t: (key: string) => string;
+  language: string;
   chatConfigRef: MutableRefObject<ChatConfig>;
   sessionsRef: MutableRefObject<ChatSession[]>;
   updateSessionMessages: (sessionId: string, messages: Message[]) => void;
@@ -24,6 +50,7 @@ type UseChatStreamOptions = {
 
 export const useChatStream = ({
   t,
+  language,
   chatConfigRef,
   sessionsRef,
   updateSessionMessages,
@@ -36,6 +63,7 @@ export const useChatStream = ({
       localAttachments?: LocalAttachment[]
     ): StreamGenerator => {
       const activeChatConfig = chatConfigRef.current;
+      const replyLanguage = resolveLanguageForReply(message, history, language);
       const common: StreamCommon = {
         history,
         message,
@@ -43,6 +71,7 @@ export const useChatStream = ({
         useThinking: activeChatConfig.useThinking,
         useSearch: activeChatConfig.useSearch,
         thinkingLevel: activeChatConfig.thinkingLevel,
+        language: replyLanguage,
         providerConfig,
         thinkingProcessLabel: t('thinkingProcess'),
         finalAnswerLabel: t('finalAnswer'),
@@ -53,7 +82,7 @@ export const useChatStream = ({
         yield* streamFactory(common);
       })();
     },
-    [chatConfigRef, t]
+    [chatConfigRef, language, t]
   );
 
   const processStreamAndUpdateMessages = useCallback(

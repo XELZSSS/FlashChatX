@@ -765,20 +765,33 @@ button.sidebar-newchat:hover {
 
 .chat-interface {
   background: var(--bg);
+  padding-bottom: calc(var(--chat-input-height, 160px) + 24px);
 }
 
 /* Smooth welcome -> chat transition */
+@keyframes chatEnter {
+  from {
+    opacity: 0.985;
+    transform: scale(0.998);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .chat-transition {
   opacity: 1;
   transform: scale(1);
-  transition:
-    opacity 180ms ease-out,
-    transform 180ms ease-out;
 }
 
 .chat-transition[data-state='welcome'] {
   opacity: 0.985;
   transform: scale(0.998);
+}
+
+.chat-transition[data-state='chat'] {
+  animation: chatEnter 180ms ease-out;
 }
 
 .sidebar-backdrop,
