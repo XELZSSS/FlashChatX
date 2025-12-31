@@ -350,6 +350,17 @@ const readOpenAISSE = async function* (
   }
 };
 
+const streamTextChunks = async function* (
+  text: string,
+  options?: { chunkSize?: number }
+): AsyncGenerator<string> {
+  const chunkSize = options?.chunkSize ?? 12;
+  for (let i = 0; i < text.length; i += chunkSize) {
+    yield text.slice(i, i + chunkSize);
+    await new Promise(resolve => setTimeout(resolve, 0));
+  }
+};
+
 const normalizeToolConfig = (config?: ToolPermissionConfig) => {
   const fallback = getDefaultToolConfig();
   return {
@@ -740,13 +751,21 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
     tool_choice: toolPayload.tool_choice,
   })) as OpenAIResponse;
 
+  const initialUsage = toTokenUsage(firstResponse.usage);
   const assistantMessage = firstResponse.choices?.[0]?.message;
   const toolCalls = assistantMessage?.tool_calls || [];
 
   if (!toolCalls.length) {
     const content = assistantMessage?.content || '';
+    if (initialUsage) {
+      yield `__TOKEN_USAGE__${JSON.stringify(initialUsage)}`;
+    }
     if (content) {
-      yield content;
+      if (payload?.stream) {
+        yield* streamTextChunks(content);
+      } else {
+        yield content;
+      }
       return;
     }
     yield* streamOpenAIStyleChatFromProxy({ endpoint, payload, errorMessage });
@@ -812,6 +831,10 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
       tool_call_id: toolCall.id,
       content,
     });
+  }
+
+  if (initialUsage) {
+    yield `__TOKEN_USAGE__${JSON.stringify(initialUsage)}`;
   }
 
   const baseMessages = payload.messages || [];

@@ -1,18 +1,14 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
-  MessageSquare,
+  MessageSquarePlus,
   Settings,
   PanelLeftClose,
   PanelLeft,
-  MessageSquarePlus,
   Trash,
-  MoreHorizontal,
-  Edit3,
-  Pin,
-  PinOff,
 } from 'lucide-react';
 import { ChatSession } from '../types';
 import { useTranslation } from '../contexts/useTranslation';
+import SessionItem from './sidebar/SessionItem';
 
 interface SidebarProps {
   readonly isOpen: boolean;
@@ -63,13 +59,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   const hasSearchFilter = searchQuery.trim().length > 0;
   const appIconSrc = `${import.meta.env.BASE_URL}XD.svg`;
 
+  const sidebarTransitionMs = 300;
+  const miniTransitionMs = 200;
+
   const closeMenu = useCallback(() => {
     setOpenMenuId(null);
     setExportPickerId(null);
   }, []);
-
-  const sidebarTransitionMs = 300;
-  const miniTransitionMs = 200;
 
   useEffect(() => {
     if (isOpen) {
@@ -247,130 +243,26 @@ const Sidebar: React.FC<SidebarProps> = ({
                 {hasSearchFilter ? t('noSearchResults') : t('noChats')}
               </div>
             ) : (
-              sessions.map(session => {
-                const isActive = currentSessionId === session.id;
-                const pinned = session.isPinned;
-
-                return (
-                  <div key={session.id} className="relative">
-                    <div
-                      className={`sidebar-item flex items-center p-2 rounded-lg cursor-pointer text-sm mb-1 transition-colors group ${
-                        isActive
-                          ? 'bg-[var(--accent-soft)] text-[var(--accent)] active'
-                          : 'text-[var(--text)]'
-                      }`}
-                      onClick={() => handleSelectChat(session.id)}
-                    >
-                      <div className="flex items-center gap-2 overflow-hidden flex-1">
-                        {pinned && (
-                          <Pin className="w-3.5 h-3.5 flex-shrink-0 text-[var(--accent)]" />
-                        )}
-                        <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                        <span className="truncate">{session.title}</span>
-                      </div>
-                      <button
-                        onClick={e => handleMenuToggle(e, session.id)}
-                        className="sidebar-more-btn p-1 rounded hover:bg-transparent opacity-0 group-hover:opacity-100 transition-opacity"
-                        title={t('more')}
-                      >
-                        <MoreHorizontal className="w-4 h-4" />
-                      </button>
-                    </div>
-
-                    {openMenuId === session.id && (
-                      <div
-                        ref={menuRef}
-                        className="sidebar-menu absolute right-0 top-8 bg-[var(--panel)] border border-[var(--border)] rounded-lg shadow-lg py-1 z-50 w-32"
-                        onClick={e => e.stopPropagation()}
-                      >
-                        <button
-                          onClick={e =>
-                            handleMenuAction(e, () =>
-                              pinned
-                                ? onUnpinChat(session.id)
-                                : onPinChat(session.id)
-                            )
-                          }
-                          className="pin-menu-btn flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--text)] hover:bg-transparent transition-colors"
-                        >
-                          {pinned ? (
-                            <PinOff className="w-3.5 h-3.5" />
-                          ) : (
-                            <Pin className="w-3.5 h-3.5" />
-                          )}
-                          {pinned ? t('unpin') : t('pin')}
-                        </button>
-                        <button
-                          onClick={e =>
-                            handleMenuAction(e, () =>
-                              onOpenRenameDialog(session.id, session.title)
-                            )
-                          }
-                          className="rename-menu-btn flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--text)] hover:bg-transparent transition-colors"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          {t('rename')}
-                        </button>
-                        <button
-                          onClick={e => handleExportToggle(e, session.id)}
-                          className="export-menu-btn flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--text)] hover:bg-transparent transition-colors"
-                        >
-                          <MessageSquarePlus className="w-3.5 h-3.5" />
-                          {t('exportChat')}
-                        </button>
-                        {exportPickerId === session.id && (
-                          <div className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--panel-strong)] p-2">
-                            <div className="text-xs text-[var(--subtle)] mb-2">
-                              {t('exportFormat')}
-                            </div>
-                            <div className="flex flex-col gap-1">
-                              <button
-                                onClick={e =>
-                                  handleMenuAction(e, () =>
-                                    onExportChat(session.id, 'json')
-                                  )
-                                }
-                                className="rounded-md px-2 py-1 text-sm text-[var(--text)] hover:bg-[var(--panel)]"
-                              >
-                                JSON
-                              </button>
-                              <button
-                                onClick={e =>
-                                  handleMenuAction(e, () =>
-                                    onExportChat(session.id, 'markdown')
-                                  )
-                                }
-                                className="rounded-md px-2 py-1 text-sm text-[var(--text)] hover:bg-[var(--panel)]"
-                              >
-                                Markdown
-                              </button>
-                              <button
-                                onClick={e =>
-                                  handleMenuAction(e, () =>
-                                    onExportChat(session.id, 'text')
-                                  )
-                                }
-                                className="rounded-md px-2 py-1 text-sm text-[var(--text)] hover:bg-[var(--panel)]"
-                              >
-                                TXT
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                        <button
-                          onClick={e =>
-                            handleMenuAction(e, () => onDeleteChat(session.id))
-                          }
-                          className="delete-menu-btn flex items-center gap-2 w-full px-3 py-2 text-sm text-[var(--text)] hover:bg-transparent transition-colors"
-                        >
-                          <Trash className="w-3.5 h-3.5" />
-                          {t('delete')}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
+              <div ref={menuRef}>
+                {sessions.map(session => (
+                  <SessionItem
+                    key={session.id}
+                    session={session}
+                    isActive={currentSessionId === session.id}
+                    openMenuId={openMenuId}
+                    exportPickerId={exportPickerId}
+                    onSelectChat={handleSelectChat}
+                    onMenuToggle={handleMenuToggle}
+                    onMenuAction={handleMenuAction}
+                    onExportToggle={handleExportToggle}
+                    onPinChat={onPinChat}
+                    onUnpinChat={onUnpinChat}
+                    onOpenRenameDialog={onOpenRenameDialog}
+                    onExportChat={onExportChat}
+                    onDeleteChat={onDeleteChat}
+                  />
+                ))}
+              </div>
             )}
           </div>
 

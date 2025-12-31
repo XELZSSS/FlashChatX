@@ -12,12 +12,13 @@ import {
   Brain,
   AlertTriangle,
   Paperclip,
-  X,
   Smile,
 } from 'lucide-react';
 import { ChatConfig, LocalAttachment } from '../types';
 import { useTranslation } from '../contexts/useTranslation';
 import InfoDialog from './InfoDialog';
+import { ToggleButton, AttachmentList } from './common';
+
 const EmojiPicker = React.lazy(() => import('./EmojiPicker'));
 
 interface InputAreaProps {
@@ -54,6 +55,7 @@ const InputArea: React.FC<InputAreaProps> = ({
   const emojiPickerRef = useRef<HTMLDivElement>(null);
   const [isInfoDialogOpen, setIsInfoDialogOpen] = useState(false);
   const [isEmojiOpen, setIsEmojiOpen] = useState(false);
+
   const thinkingLevels = useMemo(
     (): Array<{ id: ChatConfig['thinkingLevel']; label: string }> => [
       { id: 'low', label: t('thinkingLow') },
@@ -135,12 +137,13 @@ const InputArea: React.FC<InputAreaProps> = ({
     return hasInput && !isLoading && !isUploading;
   }, [attachments.length, input, isLoading, isUploading]);
 
-  const toggleFlag = useCallback(
-    (key: 'useThinking' | 'useSearch') => {
-      setConfig(prev => ({ ...prev, [key]: !prev[key] }));
-    },
-    [setConfig]
-  );
+  const toggleThinking = useCallback(() => {
+    setConfig(prev => ({ ...prev, useThinking: !prev.useThinking }));
+  }, [setConfig]);
+
+  const toggleSearch = useCallback(() => {
+    setConfig(prev => ({ ...prev, useSearch: !prev.useSearch }));
+  }, [setConfig]);
 
   const setThinkingLevel = useCallback(
     (level: ChatConfig['thinkingLevel']) => {
@@ -209,33 +212,21 @@ const InputArea: React.FC<InputAreaProps> = ({
     [input, setInput]
   );
 
-  const renderToggle = useCallback(
-    (
-      active: boolean,
-      onClick: () => void,
-      label: string,
-      icon: React.ElementType,
-      title?: string
-    ) => {
-      const Icon = icon;
-      return (
-        <button
-          onClick={onClick}
-          className={`feature-toggle flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 ${
-            active
-              ? 'bg-[var(--accent-soft)] border-[var(--accent-soft)] text-[var(--accent)]'
-              : 'surface border text-subtle hover:bg-[var(--panel-strong)]'
-          }`}
-          aria-pressed={active}
-          title={title || label}
-        >
-          <Icon className="w-3.5 h-3.5" />
-          {label}
-        </button>
-      );
-    },
-    []
-  );
+  const openInfoDialog = useCallback(() => {
+    setIsInfoDialogOpen(true);
+  }, []);
+
+  const closeInfoDialog = useCallback(() => {
+    setIsInfoDialogOpen(false);
+  }, []);
+
+  const openFilePicker = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const toggleEmojiPicker = useCallback(() => {
+    setIsEmojiOpen(open => !open);
+  }, []);
 
   return (
     <div
@@ -270,53 +261,20 @@ const InputArea: React.FC<InputAreaProps> = ({
           style={{ minHeight: '24px' }}
         />
 
-        {attachments.length > 0 && (
-          <div className="mt-3 flex flex-nowrap items-start gap-2 overflow-x-auto">
-            {attachments.map(item => (
-              <div key={item.id} className="flex flex-col gap-1 flex-shrink-0">
-                <div className="inline-flex max-w-full items-center gap-2 rounded-xl border border-[var(--border)] px-3 py-2 surface">
-                  <Paperclip className="w-4 h-4 text-subtle" />
-                  <span className="text-sm whitespace-nowrap">
-                    {item.file.name}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onRemoveAttachment(item.id)}
-                    className="flex items-center justify-center w-6 h-6 rounded-full border border-transparent text-subtle hover:text-[var(--text)] hover:bg-[var(--panel-strong)] transition-colors"
-                    aria-label={t('removeFile')}
-                    disabled={isUploading}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                {item.status === 'uploading' && (
-                  <span className="text-xs text-subtle pl-6">
-                    {item.error || t('fileUploading')}
-                  </span>
-                )}
-                {item.status === 'error' && (
-                  <span className="text-xs text-red-500 pl-6">
-                    {item.error || t('fileUploadFailed')}
-                  </span>
-                )}
-                {item.status === 'uploaded' && (
-                  <span className="text-xs text-subtle pl-6">
-                    {t('fileUploaded')}
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        )}
+        <AttachmentList
+          attachments={attachments}
+          onRemoveAttachment={onRemoveAttachment}
+          isUploading={isUploading}
+        />
 
         <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
           <div className="flex items-center gap-2">
-            {renderToggle(
-              config.useThinking,
-              () => toggleFlag('useThinking'),
-              t('thinking'),
-              Brain
-            )}
+            <ToggleButton
+              active={config.useThinking}
+              onClick={toggleThinking}
+              label={t('thinking')}
+              icon={Brain}
+            />
 
             {config.useThinking && (
               <div className="flex items-center gap-1.5 rounded-full border px-2 py-1 surface">
@@ -342,45 +300,39 @@ const InputArea: React.FC<InputAreaProps> = ({
               </div>
             )}
 
-            {renderToggle(
-              config.useSearch,
-              () => toggleFlag('useSearch'),
-              t('search'),
-              Globe,
-              config.useSearch ? 'Web search enabled' : 'Enable web search'
-            )}
+            <ToggleButton
+              active={config.useSearch}
+              onClick={toggleSearch}
+              label={t('search')}
+              icon={Globe}
+              title={
+                config.useSearch ? 'Web search enabled' : 'Enable web search'
+              }
+            />
 
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="feature-toggle flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 surface border text-subtle hover:bg-[var(--panel-strong)]"
-              title={t('uploadFile')}
+            <ToggleButton
+              active={false}
+              onClick={openFilePicker}
+              label={t('uploadFile')}
+              icon={Paperclip}
               disabled={isUploading}
-            >
-              <Paperclip className="w-3.5 h-3.5" />
-              {t('uploadFile')}
-            </button>
+            />
 
             {showEmojiButton && (
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setIsEmojiOpen(open => !open)}
-                  className="feature-toggle flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all duration-200 surface border text-subtle hover:bg-[var(--panel-strong)]"
-                  title={t('emojiButtonLabel')}
-                >
-                  <Smile className="w-3.5 h-3.5" />
-                  {t('emojiButtonLabel')}
-                </button>
-              </div>
+              <ToggleButton
+                active={isEmojiOpen}
+                onClick={toggleEmojiPicker}
+                label={t('emojiButtonLabel')}
+                icon={Smile}
+              />
             )}
 
-            {renderToggle(
-              false,
-              () => setIsInfoDialogOpen(true),
-              t('projectInfo'),
-              AlertTriangle
-            )}
+            <ToggleButton
+              active={false}
+              onClick={openInfoDialog}
+              label={t('projectInfo')}
+              icon={AlertTriangle}
+            />
           </div>
 
           <div className="flex items-center gap-3">
@@ -408,10 +360,7 @@ const InputArea: React.FC<InputAreaProps> = ({
       </div>
 
       {/* Info Dialog */}
-      <InfoDialog
-        isOpen={isInfoDialogOpen}
-        onClose={() => setIsInfoDialogOpen(false)}
-      />
+      <InfoDialog isOpen={isInfoDialogOpen} onClose={closeInfoDialog} />
     </div>
   );
 };

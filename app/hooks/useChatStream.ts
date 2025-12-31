@@ -163,7 +163,25 @@ export const useChatStream = ({
         }
         if (chunk.startsWith('__TOKEN_USAGE__')) {
           try {
-            tokenUsage = JSON.parse(chunk.replace('__TOKEN_USAGE__', ''));
+            const parsed = JSON.parse(chunk.replace('__TOKEN_USAGE__', ''));
+            if (tokenUsage) {
+              tokenUsage = {
+                prompt_tokens:
+                  tokenUsage.prompt_tokens + (parsed.prompt_tokens || 0),
+                completion_tokens:
+                  tokenUsage.completion_tokens +
+                  (parsed.completion_tokens || 0),
+                total_tokens:
+                  tokenUsage.total_tokens + (parsed.total_tokens || 0),
+                prompt_tokens_details: {
+                  cached_tokens:
+                    (tokenUsage.prompt_tokens_details?.cached_tokens || 0) +
+                    (parsed.prompt_tokens_details?.cached_tokens || 0),
+                },
+              };
+            } else {
+              tokenUsage = parsed;
+            }
           } catch (error) {
             console.error('Failed to parse token usage:', error);
           }
