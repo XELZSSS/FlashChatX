@@ -10,12 +10,7 @@ const PlatformLinks: React.FC = () => {
       name: t('openaiPlatform'),
       url: 'https://platform.openai.com/docs/overview',
     },
-    { name: t('openrouterPlatform'), url: 'https://openrouter.ai/' },
     { name: t('xaiPlatform'), url: 'https://docs.x.ai/docs/overview' },
-    {
-      name: t('mimoPlatform'),
-      url: 'https://platform.xiaomimimo.com/#/docs/welcome',
-    },
     {
       name: t('zPlatform'),
       url: 'https://bigmodel.cn/login?redirect=%2Fconsole%2Foverview',
@@ -23,7 +18,6 @@ const PlatformLinks: React.FC = () => {
     { name: t('zIntlPlatform'), url: 'https://z.ai/subscribe' },
     { name: t('bailingPlatform'), url: 'https://ling.tbox.cn/open' },
     { name: t('longcatPlatform'), url: 'https://longcat.chat/platform' },
-    { name: t('modelscopePlatform'), url: 'https://www.modelscope.cn/models' },
     {
       name: t('moonshotPlatform'),
       url: 'https://platform.moonshot.cn/docs/overview',

@@ -10,16 +10,13 @@ const SUPPORTED_UPLOAD_PROVIDERS: ProviderType[] = [
   'anthropic',
 ];
 const TOOL_FILE_PROVIDERS: ProviderType[] = [
-  'openrouter',
   'deepseek',
   'z',
   'z-intl',
   'minimax',
   'moonshot',
-  'mimo',
   'bailing',
   'longcat',
-  'modelscope',
   'openai-compatible',
   'xai',
 ];

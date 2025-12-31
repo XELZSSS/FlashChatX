@@ -5,8 +5,6 @@ import { buildDeepseekAdapter } from './deepseekAdapter';
 import { buildGoogleAdapter } from './googleAdapter';
 import { buildLongcatAdapter } from './longcatAdapter';
 import { buildMinimaxAdapter } from './minimaxAdapter';
-import { buildMimoAdapter } from './mimoAdapter';
-import { buildModelscopeAdapter } from './modelscopeAdapter';
 import { buildMoonshotAdapter } from './moonshotAdapter';
 import { buildOpenAIAdapter } from './openaiAdapter';
 import { buildOpenAICompatibleAdapter } from './openaiCompatibleAdapter';
@@ -31,15 +29,12 @@ const openAIStyleAdapters: Record<
   OpenAIStyleAdapterBuilder | undefined
 > = {
   openai: buildOpenAIAdapter,
-  openrouter: undefined,
   xai: buildXaiAdapter,
   'openai-compatible': buildOpenAICompatibleAdapter,
   deepseek: buildDeepseekAdapter,
   bailing: buildBailingAdapter,
   longcat: buildLongcatAdapter,
-  mimo: buildMimoAdapter,
   minimax: buildMinimaxAdapter,
-  modelscope: buildModelscopeAdapter,
   moonshot: buildMoonshotAdapter,
   z: buildZAdapter,
   'z-intl': buildZIntlAdapter,

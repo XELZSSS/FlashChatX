@@ -10,12 +10,8 @@ interface ImportMetaEnv {
   readonly MODEL_NAME?: string;
   readonly OPENAI_API_KEY?: string;
   readonly OPENAI_MODEL?: string;
-  readonly OPENROUTER_API_KEY?: string;
-  readonly OPENROUTER_MODEL?: string;
   readonly XAI_API_KEY?: string;
   readonly XAI_MODEL?: string;
-  readonly MIMO_API_KEY?: string;
-  readonly MIMO_MODEL?: string;
   readonly DEEPSEEK_API_KEY?: string;
   readonly DEEPSEEK_MODEL?: string;
   readonly Z_API_KEY?: string;
@@ -31,8 +27,6 @@ interface ImportMetaEnv {
   readonly LONGCAT_API_KEY?: string;
   readonly LONGCAT_MODEL?: string;
   readonly LONGCAT_THINKING_MODEL?: string;
-  readonly MODELSCOPE_API_KEY?: string;
-  readonly MODELSCOPE_MODEL?: string;
   readonly MOONSHOT_API_KEY?: string;
   readonly MOONSHOT_MODEL?: string;
   readonly MINIMAX_API_KEY?: string;

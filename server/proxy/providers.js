@@ -11,12 +11,6 @@ export const API_PROVIDERS = {
     targetUrl: 'https://api.x.ai/v1/chat/completions',
     endpoint: '/api/xai',
   },
-  mimo: {
-    keyEnvVar: 'MIMO_API_KEY',
-    modelEnvVar: 'MIMO_MODEL',
-    targetUrl: 'https://api.xiaomimimo.com/v1/chat/completions',
-    endpoint: '/api/mimo',
-  },
   z: {
     keyEnvVar: 'Z_API_KEY',
     modelEnvVar: 'Z_MODEL',
@@ -53,12 +47,6 @@ export const API_PROVIDERS = {
     modelEnvVar: 'LONGCAT_MODEL',
     targetUrl: 'https://api.longcat.chat/openai/v1/chat/completions',
     endpoint: '/api/longcat',
-  },
-  modelscope: {
-    keyEnvVar: 'MODELSCOPE_API_KEY',
-    modelEnvVar: 'MODELSCOPE_MODEL',
-    targetUrl: 'https://api-inference.modelscope.cn/v1/chat/completions',
-    endpoint: '/api/modelscope',
   },
   moonshot: {
     keyEnvVar: 'MOONSHOT_API_KEY',
@@ -103,10 +91,8 @@ export const TIME_TOOL_PROVIDERS = new Set([
   'z-intl',
   'minimax',
   'moonshot',
-  'mimo',
   'bailing',
   'longcat',
-  'modelscope',
 ]);
 
 export const SYSTEM_TIME_TOOL = {

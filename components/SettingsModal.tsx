@@ -309,16 +309,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
     () =>
       [
         { id: 'openai' as const, label: t('openai') },
-        { id: 'openrouter' as const, label: t('openrouter') },
         { id: 'xai' as const, label: t('xai') },
-        { id: 'mimo' as const, label: t('mimo') },
         { id: 'z' as const, label: t('z') },
         { id: 'z-intl' as const, label: t('zIntl') },
         { id: 'deepseek' as const, label: t('deepseek') },
         { id: 'openai-compatible' as const, label: t('openaiCompatible') },
         { id: 'bailing' as const, label: t('bailing') },
         { id: 'longcat' as const, label: t('longcat') },
-        { id: 'modelscope' as const, label: t('modelscope') },
         { id: 'moonshot' as const, label: t('moonshot') },
         { id: 'minimax' as const, label: t('minimax') },
         { id: 'gemini' as const, label: t('gemini') },
@@ -333,16 +330,13 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
   const advancedParamSupport = useMemo(
     () => ({
       openai: { topP: true, topK: false },
-      openrouter: { topP: true, topK: false },
       xai: { topP: true, topK: true },
       'openai-compatible': { topP: true, topK: true },
-      mimo: { topP: true, topK: true },
       z: { topP: true, topK: true },
       'z-intl': { topP: true, topK: true },
       deepseek: { topP: true, topK: true },
       bailing: { topP: true, topK: true },
       longcat: { topP: true, topK: true },
-      modelscope: { topP: true, topK: true },
       moonshot: { topP: true, topK: true },
       minimax: { topP: true, topK: true },
       gemini: { topP: true, topK: true },

@@ -10,13 +10,10 @@ export const DEFAULT_CHAT_CONFIG: ChatConfig = {
 
 export const TOOL_SEARCH_PROVIDERS = new Set<ProviderType>([
   'openai',
-  'openrouter',
   'xai',
   'openai-compatible',
   'bailing',
   'longcat',
-  'modelscope',
-  'mimo',
   'minimax',
   'z',
   'z-intl',

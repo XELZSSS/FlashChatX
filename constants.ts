@@ -3,16 +3,13 @@ import { Theme, ProviderType, ThinkingLevel } from './types';
 // Model constants for each provider
 export const MODEL_CONFIG = {
   openai: 'gpt-5.2',
-  openrouter: 'openai/gpt-5',
   xai: 'grok-4-1-fast',
-  mimo: 'mimo-v2-flash',
   z: 'glm-4.7',
   'z-intl': 'glm-4.7',
   deepseek: 'deepseek-chat',
   'openai-compatible': 'gpt-5.2',
   bailing: 'Ling-1T',
   longcat: 'LongCat-Flash-Chat',
-  modelscope: 'deepseek-ai/DeepSeek-V3',
   moonshot: 'kimi-k2-turbo-preview',
   minimax: 'MiniMax-M2.1',
   gemini: 'gemini-3-flash-preview',

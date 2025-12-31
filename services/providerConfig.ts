@@ -41,9 +41,7 @@ const STORE_VERSION = 2 as const;
 // Provider-specific environment variable mappings
 const PROVIDER_ENV_VARS = {
   openai: { apiKey: 'OPENAI_API_KEY', model: 'OPENAI_MODEL' },
-  openrouter: { apiKey: 'OPENROUTER_API_KEY', model: 'OPENROUTER_MODEL' },
   xai: { apiKey: 'XAI_API_KEY', model: 'XAI_MODEL' },
-  mimo: { apiKey: 'MIMO_API_KEY', model: 'MIMO_MODEL' },
   z: { apiKey: 'Z_API_KEY', model: 'Z_MODEL' },
   'z-intl': { apiKey: 'Z_INTL_API_KEY', model: 'Z_INTL_MODEL' },
   deepseek: { apiKey: 'DEEPSEEK_API_KEY', model: 'DEEPSEEK_MODEL' },
@@ -62,7 +60,6 @@ const PROVIDER_ENV_VARS = {
     model: 'LONGCAT_MODEL',
     thinkingModel: 'LONGCAT_THINKING_MODEL',
   },
-  modelscope: { apiKey: 'MODELSCOPE_API_KEY', model: 'MODELSCOPE_MODEL' },
   moonshot: { apiKey: 'MOONSHOT_API_KEY', model: 'MOONSHOT_MODEL' },
   minimax: { apiKey: 'MINIMAX_API_KEY', model: 'MINIMAX_MODEL' },
   gemini: { apiKey: 'GEMINI_API_KEY', model: 'GEMINI_MODEL' },

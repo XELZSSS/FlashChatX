@@ -80,11 +80,6 @@ export const loadStreamFactory = (provider: string): Promise<StreamFactory> => {
         streamFactoryCache.set(provider, m.streamZResponse);
         return m.streamZResponse;
       });
-    case 'mimo':
-      return import('../services/mimoService').then(m => {
-        streamFactoryCache.set(provider, m.streamMimoResponse);
-        return m.streamMimoResponse;
-      });
     case 'z-intl':
       return import('../services/zIntlService').then(m => {
         streamFactoryCache.set(provider, m.streamZIntlResponse);
@@ -100,11 +95,6 @@ export const loadStreamFactory = (provider: string): Promise<StreamFactory> => {
         streamFactoryCache.set(provider, m.streamOpenAICompatibleResponse);
         return m.streamOpenAICompatibleResponse;
       });
-    case 'openrouter':
-      return import('../services/openrouterService').then(m => {
-        streamFactoryCache.set(provider, m.streamOpenRouterResponse);
-        return m.streamOpenRouterResponse;
-      });
     case 'xai':
       return import('../services/xaiService').then(m => {
         streamFactoryCache.set(provider, m.streamXaiResponse);
@@ -119,11 +109,6 @@ export const loadStreamFactory = (provider: string): Promise<StreamFactory> => {
       return import('../services/longcatService').then(m => {
         streamFactoryCache.set(provider, m.streamLongCatResponse);
         return m.streamLongCatResponse;
-      });
-    case 'modelscope':
-      return import('../services/modelscopeService').then(m => {
-        streamFactoryCache.set(provider, m.streamModelScopeResponse);
-        return m.streamModelScopeResponse;
       });
     case 'moonshot':
       return import('../services/moonshotService').then(m => {
