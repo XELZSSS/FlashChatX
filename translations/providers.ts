@@ -1,0 +1,58 @@
+/**
+ * Provider name translations
+ * 供应商名称翻译
+ */
+export const providers = {
+    English: {
+        openai: 'OpenAI',
+        xai: 'xAI',
+        z: 'Z AI',
+        zIntl: 'Z AI International',
+        deepseek: 'DeepSeek',
+        openaiCompatible: 'OpenAI Compatible',
+        bailing: 'Bailing',
+        longcat: 'LongCat',
+        moonshot: 'Moonshot AI',
+        minimax: 'MiniMax',
+        gemini: 'Gemini',
+        anthropic: 'Anthropic Claude',
+        // Platforms
+        deepseekPlatform: 'DeepSeek Platform',
+        openaiPlatform: 'OpenAI Platform',
+        xaiPlatform: 'xAI Platform',
+        zPlatform: 'Z AI Platform',
+        zIntlPlatform: 'Z AI International Platform',
+        bailingPlatform: 'Bailing Platform',
+        longcatPlatform: 'LongCat Platform',
+        moonshotPlatform: 'Moonshot AI Platform',
+        minimaxPlatform: 'MiniMax Platform',
+        googlePlatform: 'Google AI Platform',
+        anthropicPlatform: 'Anthropic Platform',
+    },
+    简体中文: {
+        openai: 'OpenAI',
+        xai: 'xAI',
+        z: 'Z AI',
+        zIntl: 'Z AI 国际版',
+        deepseek: 'DeepSeek',
+        openaiCompatible: 'OpenAI 兼容',
+        bailing: '百灵',
+        longcat: 'LongCat',
+        moonshot: '月之暗面',
+        minimax: 'MiniMax',
+        gemini: 'Gemini',
+        anthropic: 'Anthropic Claude',
+        // Platforms
+        deepseekPlatform: 'DeepSeek 平台',
+        openaiPlatform: 'OpenAI 平台',
+        xaiPlatform: 'xAI 平台',
+        zPlatform: 'Z AI 平台',
+        zIntlPlatform: 'Z AI 国际版平台',
+        bailingPlatform: '百灵平台',
+        longcatPlatform: 'LongCat 平台',
+        moonshotPlatform: '月之暗面平台',
+        minimaxPlatform: 'MiniMax 平台',
+        googlePlatform: 'Google AI 平台',
+        anthropicPlatform: 'Anthropic 平台',
+    },
+};

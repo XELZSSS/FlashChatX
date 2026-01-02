@@ -5,7 +5,6 @@ import {
 } from './providerConfig';
 import { TokenUsage, ThinkingLevel, LocalAttachment } from '../types';
 import type { OpenAIContentPart } from './adapters/types';
-import { THINKING_BUDGETS } from '../constants';
 import type { ToolPermissionConfig } from '../types';
 import {
   getDefaultToolConfig,
@@ -16,6 +15,30 @@ import {
 } from './toolRegistry';
 import { searchAndFormat } from './searchService';
 
+// Re-export from modularized utils
+export {
+  buildThinkingToggle,
+  buildThinkingBudgetToggle,
+  resolveThinkingLevel,
+  resolveThinkingBudget,
+  getThinkingBudget,
+  resolveOpenAIReasoningEffort,
+} from './utils/thinkingUtils';
+
+export {
+  withRetry,
+  fetchProxy,
+  postProxyJson,
+  requireApiKey,
+} from './utils/proxyUtils';
+
+// Import for internal use (with aliases to avoid conflict with re-exports)
+import {
+  fetchProxy as _fetchProxy,
+  postProxyJson as _postProxyJson,
+} from './utils/proxyUtils';
+
+// Types used internally
 type OpenAIResponseReasoningDetail = { text?: string };
 type OpenAIResponseMessage = {
   content?: string;
@@ -152,151 +175,7 @@ export const resolveProviderState = (providerConfig?: ProviderConfig) => {
   return { config: resolvedConfig, model, streaming };
 };
 
-export const buildThinkingToggle = (useThinking: boolean) => {
-  const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
-  return { thinking: { type } };
-};
 
-export const resolveThinkingLevel = (
-  thinkingLevel?: ThinkingLevel
-): ThinkingLevel => thinkingLevel || 'medium';
-
-const OPENAI_BUDGET_TO_EFFORT = [
-  { max: 1024, effort: 'low' as ThinkingLevel },
-  { max: 4096, effort: 'medium' as ThinkingLevel },
-];
-
-export const resolveThinkingBudget = (
-  thinkingLevel?: ThinkingLevel,
-  customBudget?: number
-): number => {
-  if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
-    return customBudget;
-  }
-  return THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
-};
-
-export const getThinkingBudget = (thinkingLevel?: ThinkingLevel): number =>
-  THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
-
-export const resolveOpenAIReasoningEffort = (
-  thinkingLevel?: ThinkingLevel,
-  customBudget?: number
-): ThinkingLevel => {
-  if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
-    for (const rule of OPENAI_BUDGET_TO_EFFORT) {
-      if (customBudget <= rule.max) {
-        return rule.effort;
-      }
-    }
-    return 'high';
-  }
-  return resolveThinkingLevel(thinkingLevel);
-};
-
-export const buildThinkingBudgetToggle = (
-  useThinking: boolean,
-  thinkingLevel?: ThinkingLevel,
-  customBudget?: number
-) => {
-  const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
-  if (!useThinking) {
-    return { thinking: { type } };
-  }
-  return {
-    thinking: {
-      type,
-      budget_tokens: resolveThinkingBudget(thinkingLevel, customBudget),
-    },
-  };
-};
-
-export const requireApiKey = (key: string | undefined, label: string) => {
-  if (!key) {
-    throw new Error(`${label} is missing. Please configure the API key.`);
-  }
-  return key;
-};
-
-// Retry mechanism for API calls with exponential backoff
-export const withRetry = async <T>(
-  fn: () => Promise<T>,
-  maxRetries: number = 3,
-  baseDelay: number = 1000
-): Promise<T> => {
-  let lastError: Error | undefined;
-
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      return await fn();
-    } catch (error) {
-      lastError = error as Error;
-      const message =
-        error instanceof Error ? error.message : String(error || '');
-      const status = (() => {
-        if (!error || typeof error !== 'object') return undefined;
-        const candidate = error as {
-          status?: unknown;
-          response?: { status?: unknown };
-        };
-        if (typeof candidate.status === 'number') return candidate.status;
-        if (typeof candidate.response?.status === 'number') {
-          return candidate.response.status;
-        }
-        return undefined;
-      })();
-
-      const retryable =
-        status === 429 ||
-        (status && status >= 500) ||
-        message.includes('rate limit') ||
-        message.includes('ECONN') ||
-        message.includes('ETIMEDOUT') ||
-        message.includes('network');
-
-      if (!retryable) {
-        throw error;
-      }
-
-      if (attempt === maxRetries) {
-        throw new Error(
-          `Request failed after ${maxRetries + 1} attempts: ${message || 'retry limit reached'}`
-        );
-      }
-
-      const delay = baseDelay * Math.pow(2, attempt) + Math.random() * 500;
-      await new Promise(resolve => setTimeout(resolve, delay));
-    }
-  }
-
-  throw lastError ?? new Error('Request failed without error details');
-};
-
-const PROXY_BASE_URL = 'http://localhost:8787/api';
-
-const fetchProxy = async (
-  endpoint: string,
-  payload: unknown
-): Promise<Response> =>
-  withRetry(async () => {
-    const res = await fetch(`${PROXY_BASE_URL}/${endpoint}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-
-    if (!res.ok) {
-      const errorText = await res.text().catch(() => '');
-      throw new Error(`HTTP ${res.status}: ${res.statusText} - ${errorText}`);
-    }
-
-    return res;
-  });
-
-export const postProxyJson = async (endpoint: string, payload: unknown) => {
-  const response = await fetchProxy(endpoint, payload);
-  return response.json();
-};
 
 type OpenAIStreamUsage = {
   prompt_tokens?: number;
@@ -308,13 +187,13 @@ type OpenAIStreamUsage = {
 const toTokenUsage = (usage?: OpenAIStreamUsage): TokenUsage | undefined =>
   usage
     ? {
-        prompt_tokens: usage.prompt_tokens || 0,
-        completion_tokens: usage.completion_tokens || 0,
-        total_tokens: usage.total_tokens || 0,
-        prompt_tokens_details: usage.prompt_tokens_details
-          ? { cached_tokens: usage.prompt_tokens_details.cached_tokens || 0 }
-          : undefined,
-      }
+      prompt_tokens: usage.prompt_tokens || 0,
+      completion_tokens: usage.completion_tokens || 0,
+      total_tokens: usage.total_tokens || 0,
+      prompt_tokens_details: usage.prompt_tokens_details
+        ? { cached_tokens: usage.prompt_tokens_details.cached_tokens || 0 }
+        : undefined,
+    }
     : undefined;
 
 const readOpenAISSE = async function* (
@@ -465,9 +344,9 @@ const normalizeOptionalBoolean = (value: unknown): boolean | undefined => {
 const getMessageText = (content: string | OpenAIContentPart[]) =>
   Array.isArray(content)
     ? content
-        .filter(part => part.type === 'text')
-        .map(part => part.text)
-        .join('')
+      .filter(part => part.type === 'text')
+      .map(part => part.text)
+      .join('')
     : content;
 
 const getLastUserMessageText = (
@@ -517,7 +396,7 @@ export const streamOpenAIStyleChatFromProxy = async function* (options: {
   const { endpoint, payload, errorMessage } = options;
 
   try {
-    const response = await fetchProxy(endpoint, payload);
+    const response = await _fetchProxy(endpoint, payload);
 
     if (!payload?.stream) {
       const data = (await response.json()) as OpenAIResponse;
@@ -600,7 +479,7 @@ export const streamAnthropicStyleChatFromProxy = async function* (options: {
   const { endpoint, payload, errorMessage } = options;
 
   try {
-    const response = await fetchProxy(endpoint, payload);
+    const response = await _fetchProxy(endpoint, payload);
 
     if (!payload?.stream) {
       const data = (await response.json()) as AnthropicResponse;
@@ -633,10 +512,10 @@ export const streamAnthropicStyleChatFromProxy = async function* (options: {
     let buffer = '';
     let tokenUsage:
       | {
-          prompt_tokens: number;
-          completion_tokens: number;
-          total_tokens: number;
-        }
+        prompt_tokens: number;
+        completion_tokens: number;
+        total_tokens: number;
+      }
       | undefined;
 
     while (true) {
@@ -744,7 +623,7 @@ export const streamOpenAIStyleChatWithLocalFiles = async function* (options: {
   const basePayload = { ...(payload || {}) };
   delete basePayload.stream_options;
 
-  const firstResponse = (await postProxyJson(endpoint, {
+  const firstResponse = (await _postProxyJson(endpoint, {
     ...basePayload,
     stream: false,
     tools: toolPayload.tools,

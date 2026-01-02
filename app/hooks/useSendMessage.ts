@@ -3,13 +3,7 @@ import { buildHistory, generateId, type HistoryEntry } from '../appUtils';
 import { MIN_SEND_INTERVAL_MS, TOOL_SEARCH_PROVIDERS } from '../chatConstants';
 import { loadProviderConfig } from '../../services/providerConfig';
 import { searchAndFormat } from '../../services/searchService';
-import {
-  saveConversationToMemory,
-  retrieveRelevantMemories,
-  formatConversationToString,
-  isMemuAvailable,
-  type MemuConfig,
-} from '../../services/memuService';
+import { type MemuConfig } from '../../services/memuService';
 import {
   supportsFileUpload,
   supportsToolFileHandling,
@@ -19,6 +13,8 @@ import {
   isToolEnabled,
   READ_FILE_TOOL_NAME,
 } from '../../services/toolRegistry';
+import { useErrorFormatter } from './useErrorFormatter';
+import { useMemoryManager } from './useMemoryManager';
 import type {
   ChatConfig,
   ChatSession,
@@ -94,113 +90,10 @@ export const useSendMessage = ({
   createProviderStream,
   processStreamAndUpdateMessages,
 }: UseSendMessageOptions) => {
-  const formatErrorMessage = useCallback(
-    (error: unknown) => {
-      const raw =
-        error instanceof Error ? error.message?.trim() : String(error || '');
-      const normalized = raw.toLowerCase();
-      const hints: string[] = [];
-
-      if (normalized.includes('api key') || normalized.includes('apikey')) {
-        hints.push(t('errorMissingApiKey'));
-      }
-      if (normalized.includes('401') || normalized.includes('unauthorized')) {
-        hints.push(t('errorUnauthorized'));
-      }
-      if (normalized.includes('403') || normalized.includes('forbidden')) {
-        hints.push(t('errorForbidden'));
-      }
-      if (normalized.includes('429') || normalized.includes('rate limit')) {
-        hints.push(t('errorRateLimit'));
-      }
-      if (normalized.includes('timeout') || normalized.includes('timed out')) {
-        hints.push(t('errorTimeout'));
-      }
-      if (
-        normalized.includes('network') ||
-        normalized.includes('econn') ||
-        normalized.includes('fetch')
-      ) {
-        hints.push(t('errorNetwork'));
-      }
-      if (normalized.includes('model') && normalized.includes('not')) {
-        hints.push(t('errorModelNotFound'));
-      }
-      if (normalized.includes('api url') || normalized.includes('apiurl')) {
-        hints.push(t('errorInvalidApiUrl'));
-      }
-      if (
-        normalized.includes('500') ||
-        normalized.includes('502') ||
-        normalized.includes('503') ||
-        normalized.includes('504')
-      ) {
-        hints.push(t('errorServer'));
-      }
-
-      const details = raw ? `${t('errorDetails')}\n${raw}` : t('errorUnknown');
-      const hintText = hints.length
-        ? `\n\n${t('errorHints')}\n- ${hints.join('\n- ')}`
-        : '';
-
-      return `${t('errorTitle')}\n${details}${hintText}`;
-    },
-    [t]
-  );
-
-  const retrieveMemories = useCallback(
-    async (query: string) => {
-      const activeMemuConfig = memuConfigRef.current;
-      if (!isMemuAvailable(activeMemuConfig) || !query.trim()) {
-        return [];
-      }
-
-      try {
-        const memories = await retrieveRelevantMemories(
-          'default_user', // In a real app, this would be the actual user ID
-          query,
-          'flashchatx_agent', // Agent ID
-          activeMemuConfig
-        );
-
-        return memories.map(memory => memory.content);
-      } catch (error) {
-        console.error('Failed to retrieve memories:', error);
-        return [];
-      }
-    },
-    [memuConfigRef]
-  );
-
-  const saveToMemory = useCallback(
-    async (messages: Message[]) => {
-      const activeMemuConfig = memuConfigRef.current;
-      if (!isMemuAvailable(activeMemuConfig) || !activeMemuConfig.autoSave) {
-        return;
-      }
-
-      try {
-        const conversationString = formatConversationToString(
-          messages.map(msg => ({
-            role: msg.role,
-            content: msg.content,
-          }))
-        );
-
-        await saveConversationToMemory(
-          conversationString,
-          'default_user', // In a real app, this would be the actual user ID
-          'User', // In a real app, this would be the actual user name
-          'flashchatx_agent', // Agent ID
-          'FlashChat X Assistant', // Agent name
-          activeMemuConfig
-        );
-      } catch (error) {
-        console.error('Failed to save conversation to memory:', error);
-      }
-    },
-    [memuConfigRef]
-  );
+  // Use extracted hooks for error formatting and memory management
+  const { formatErrorMessage } = useErrorFormatter(t);
+  const { retrieveMemories, saveToMemory, isMemuEnabled } =
+    useMemoryManager(memuConfigRef);
 
   const fetchSearchMessage = useCallback(
     async (query: string, providerConfig: ProviderConfig) => {
@@ -374,7 +267,7 @@ export const useSendMessage = ({
       }
 
       const queryInput = titleBase;
-      const memuEnabled = isMemuAvailable(activeMemuConfig);
+      const memuEnabled = isMemuEnabled();
       const [memoryContents, searchMessage] = await Promise.all([
         memuEnabled
           ? retrieveMemories(queryInput)

@@ -366,6 +366,10 @@ button.sidebar-newchat:hover {
   color: var(--text);
 }
 
+[data-theme='dark'] .sidebar-item.active {
+  background: var(--panel-strong);
+}
+
 [data-theme='dark'] .sidebar-item .text-slate-500 {
   color: var(--subtle);
 }
@@ -794,95 +798,44 @@ button.sidebar-newchat:hover {
   animation: chatEnter 180ms ease-out;
 }
 
+/* ===========================================
+   Unified Modal Backdrop & Panel Base Styles
+   统一的模态框背景与面板基础样式
+   =========================================== */
+
+/* Base backdrop styles for all modals */
+.modal-backdrop,
 .sidebar-backdrop,
 .SettingsModal,
 .ConfirmDialog,
 .InfoDialog {
-  background-color: rgba(0, 0, 0, 0.28) !important;
-  backdrop-filter: blur(4px) saturate(1.1) !important;
-}
-
-.settings-backdrop {
-  opacity: 1;
-  transition: opacity 0.18s ease;
-}
-
-.settings-backdrop[data-state='closing'] {
-  opacity: 0;
-}
-
-.settings-panel {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  transition:
-    opacity 0.18s ease,
-    transform 0.18s ease;
-}
-
-.settings-panel[data-state='closing'] {
-  opacity: 0;
-  transform: translateY(6px) scale(0.98);
-}
-
-.confirm-backdrop {
   background-color: rgba(0, 0, 0, 0.28);
   backdrop-filter: blur(4px) saturate(1.1);
-  opacity: 1;
-  transition: opacity 0.16s ease;
 }
 
-.confirm-backdrop[data-state='closing'] {
-  opacity: 0;
-}
-
-.confirm-panel {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  transition:
-    opacity 0.16s ease,
-    transform 0.16s ease;
-}
-
-.confirm-panel[data-state='closing'] {
-  opacity: 0;
-  transform: translateY(6px) scale(0.98);
-}
-
-.rename-backdrop {
-  background-color: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(4px) saturate(1.1);
-  opacity: 1;
-  transition: opacity 0.16s ease;
-}
-
-.rename-backdrop[data-state='closing'] {
-  opacity: 0;
-}
-
-.rename-panel {
-  opacity: 1;
-  transform: translateY(0) scale(1);
-  transition:
-    opacity 0.16s ease,
-    transform 0.16s ease;
-}
-
-.rename-panel[data-state='closing'] {
-  opacity: 0;
-  transform: translateY(6px) scale(0.98);
-}
-
+/* Base backdrop animation */
+.modal-backdrop,
+.settings-backdrop,
+.confirm-backdrop,
+.rename-backdrop,
 .info-backdrop {
-  background-color: rgba(0, 0, 0, 0.28);
-  backdrop-filter: blur(4px) saturate(1.1);
   opacity: 1;
   transition: opacity 0.16s ease;
 }
 
+.modal-backdrop[data-state='closing'],
+.settings-backdrop[data-state='closing'],
+.confirm-backdrop[data-state='closing'],
+.rename-backdrop[data-state='closing'],
 .info-backdrop[data-state='closing'] {
   opacity: 0;
 }
 
+/* Base panel animation */
+.modal-panel,
+.settings-panel,
+.confirm-panel,
+.rename-panel,
 .info-panel {
   opacity: 1;
   transform: translateY(0) scale(1);
@@ -891,9 +844,24 @@ button.sidebar-newchat:hover {
     transform 0.16s ease;
 }
 
+.modal-panel[data-state='closing'],
+.settings-panel[data-state='closing'],
+.confirm-panel[data-state='closing'],
+.rename-panel[data-state='closing'],
 .info-panel[data-state='closing'] {
   opacity: 0;
   transform: translateY(6px) scale(0.98);
+}
+
+/* Settings modal has slightly longer transition */
+.settings-backdrop {
+  transition: opacity 0.18s ease;
+}
+
+.settings-panel {
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 /* Copy success toast animation */

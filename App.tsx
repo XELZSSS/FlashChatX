@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 // Components
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
@@ -6,8 +6,10 @@ import ConfirmDialog from './components/ConfirmDialog';
 import InputArea from './components/InputArea';
 import SettingsModal from './components/SettingsModal';
 import TitleBar from './components/TitleBar';
+import Toast from './components/Toast';
+import RenameDialog from './components/RenameDialog';
 // Services
-import { DEFAULT_SETTINGS } from './constants';
+import { DEFAULT_SETTINGS, ANIMATION } from './constants';
 import { getJSON } from './app/appUtils';
 import { DEFAULT_CHAT_CONFIG } from './app/chatConstants';
 import { loadMemuConfig, type MemuConfig } from './services/memuService';
@@ -249,63 +251,20 @@ const AppContent: React.FC<{
     setSessionsWithRef,
   });
 
-  const [renameVisible, setRenameVisible] = useState(isRenameDialogOpen);
-  const [renameClosing, setRenameClosing] = useState(false);
-  const renameOpenTimerRef = useRef<number | null>(null);
-  const renameCloseTimerRef = useRef<number | null>(null);
-  const renameHideTimerRef = useRef<number | null>(null);
-  const renameTransitionMs = 160;
+  // Rename dialog handlers
+  const handleRenameDialogConfirm = useCallback(
+    (title: string) => {
+      if (renameSessionId) {
+        updateSessionTitle(renameSessionId, title);
+      }
+      setIsRenameDialogOpen(false);
+    },
+    [renameSessionId, updateSessionTitle, setIsRenameDialogOpen]
+  );
 
-  useEffect(() => {
-    if (isRenameDialogOpen) {
-      if (renameOpenTimerRef.current) {
-        window.clearTimeout(renameOpenTimerRef.current);
-        renameOpenTimerRef.current = null;
-      }
-      if (renameCloseTimerRef.current) {
-        window.clearTimeout(renameCloseTimerRef.current);
-        renameCloseTimerRef.current = null;
-      }
-      if (renameHideTimerRef.current) {
-        window.clearTimeout(renameHideTimerRef.current);
-        renameHideTimerRef.current = null;
-      }
-      renameOpenTimerRef.current = window.setTimeout(() => {
-        setRenameVisible(true);
-        setRenameClosing(false);
-      }, 0);
-      return () => {
-        if (renameOpenTimerRef.current) {
-          window.clearTimeout(renameOpenTimerRef.current);
-          renameOpenTimerRef.current = null;
-        }
-      };
-    }
-
-    if (!renameVisible) return;
-    renameCloseTimerRef.current = window.setTimeout(() => {
-      setRenameClosing(true);
-    }, 0);
-    renameHideTimerRef.current = window.setTimeout(() => {
-      setRenameVisible(false);
-      setRenameClosing(false);
-    }, renameTransitionMs);
-
-    return () => {
-      if (renameOpenTimerRef.current) {
-        window.clearTimeout(renameOpenTimerRef.current);
-        renameOpenTimerRef.current = null;
-      }
-      if (renameCloseTimerRef.current) {
-        window.clearTimeout(renameCloseTimerRef.current);
-        renameCloseTimerRef.current = null;
-      }
-      if (renameHideTimerRef.current) {
-        window.clearTimeout(renameHideTimerRef.current);
-        renameHideTimerRef.current = null;
-      }
-    };
-  }, [isRenameDialogOpen, renameVisible]);
+  const handleRenameDialogCancel = useCallback(() => {
+    setIsRenameDialogOpen(false);
+  }, [setIsRenameDialogOpen]);
 
   const chatTransitionLockUntilRef = useRef(0);
   const previousShowWelcomeRef = useRef(showWelcome);
@@ -315,7 +274,7 @@ const AppContent: React.FC<{
     if (showWelcome) {
       chatTransitionLockUntilRef.current = 0;
     } else if (wasWelcome) {
-      chatTransitionLockUntilRef.current = Date.now() + 200;
+      chatTransitionLockUntilRef.current = Date.now() + ANIMATION.CHAT_TRANSITION_LOCK_MS;
     }
     previousShowWelcomeRef.current = showWelcome;
   }, [showWelcome]);
@@ -435,57 +394,14 @@ const AppContent: React.FC<{
         onCancel={onCloseClearConfirm}
       />
 
-      {toast && (
-        <div className="fixed bottom-6 right-6 z-[70]">
-          <div
-            className={`surface rounded-xl px-4 py-3 text-sm shadow-soft border transition-all ${
-              toast.tone === 'error'
-                ? 'border-red-500/30 text-red-400'
-                : 'border-[var(--border)] text-[var(--text)]'
-            }`}
-          >
-            {toast.message}
-          </div>
-        </div>
-      )}
+      {toast && <Toast toast={toast} />}
 
-      {/* Rename Dialog */}
-      {renameVisible && (
-        <div
-          className="rename-backdrop fixed inset-0 z-50 flex items-center justify-center"
-          data-state={renameClosing ? 'closing' : 'open'}
-        >
-          <div
-            className="RenameDialog rename-panel surface rounded-lg p-4 w-full max-w-md mx-4"
-            data-state={renameClosing ? 'closing' : 'open'}
-          >
-            <h3 className="text-lg font-medium mb-3">{t('renameChatTitle')}</h3>
-            <input
-              type="text"
-              value={newTitle}
-              onChange={onRenameInputChange}
-              onKeyDown={onRenameKeyDown}
-              className="w-full px-3 py-2 border border-[var(--border)] rounded-md bg-[var(--panel)] text-[var(--text)] focus:outline-none"
-              placeholder={t('newChatName')}
-              autoFocus
-            />
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={onRenameCancel}
-                className="px-3 py-1.5 text-sm bg-[var(--panel)] border border-[var(--border)] rounded-md text-[var(--text)] transition-colors"
-              >
-                {t('cancel')}
-              </button>
-              <button
-                onClick={onRenameConfirm}
-                className="px-3 py-1.5 text-sm bg-[var(--accent)] text-white rounded-md transition-colors"
-              >
-                {t('save')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <RenameDialog
+        isOpen={isRenameDialogOpen}
+        initialTitle={newTitle}
+        onConfirm={handleRenameDialogConfirm}
+        onCancel={handleRenameDialogCancel}
+      />
     </div>
   );
 };

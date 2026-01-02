@@ -74,6 +74,20 @@ export const UI_CONSTANTS = {
   MOBILE_BREAKPOINT: 768,
 } as const;
 
+// Animation timing constants for consistent UI transitions
+export const ANIMATION = {
+  /** Rename dialog open/close transition duration in ms */
+  RENAME_DIALOG_DURATION_MS: 160,
+  /** Chat transition lock duration in ms (prevents rapid transitions) */
+  CHAT_TRANSITION_LOCK_MS: 200,
+  /** Settings modal transition duration in ms */
+  SETTINGS_MODAL_DURATION_MS: 180,
+  /** Confirm dialog transition duration in ms */
+  CONFIRM_DIALOG_DURATION_MS: 160,
+  /** Toast display duration in ms */
+  TOAST_DURATION_MS: 2500,
+} as const;
+
 // MemU constants
 export const MEMU_DEFAULTS = {
   BASE_URL: 'https://api.memu.so',
