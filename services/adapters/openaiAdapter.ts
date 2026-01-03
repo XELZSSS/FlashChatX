@@ -1,5 +1,5 @@
-import { buildFinalOpenAIMessages } from '../messageBuilder';
-import { resolveOpenAIReasoningEffort } from '../serviceUtils';
+import { buildFinalOpenAIMessages } from '../pipeline/messageBuilder';
+import { resolveOpenAIReasoningEffort } from '../pipeline/serviceUtils';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 
 export const buildOpenAIAdapter = (

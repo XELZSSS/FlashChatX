@@ -1,8 +1,8 @@
 import {
   buildFinalOpenAIMessages,
   injectAttachmentPrompt,
-} from '../messageBuilder';
-import { buildThinkingBudgetToggle } from '../serviceUtils';
+} from '../pipeline/messageBuilder';
+import { buildThinkingBudgetToggle } from '../pipeline/serviceUtils';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 
 export const buildOpenAICompatibleAdapter = (

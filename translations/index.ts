@@ -15,24 +15,24 @@ type LanguageKey = 'English' | '简体中文';
 
 // Merged translations maintaining backward compatibility
 export const translations = {
-    English: {
-        ...common.English,
-        ...errors.English,
-        ...settings.English,
-        ...providers.English,
-        ...tools.English,
-        ...data.English,
-        ...emoji.English,
-    },
-    简体中文: {
-        ...common['简体中文'],
-        ...errors['简体中文'],
-        ...settings['简体中文'],
-        ...providers['简体中文'],
-        ...tools['简体中文'],
-        ...data['简体中文'],
-        ...emoji['简体中文'],
-    },
+  English: {
+    ...common.English,
+    ...errors.English,
+    ...settings.English,
+    ...providers.English,
+    ...tools.English,
+    ...data.English,
+    ...emoji.English,
+  },
+  简体中文: {
+    ...common['简体中文'],
+    ...errors['简体中文'],
+    ...settings['简体中文'],
+    ...providers['简体中文'],
+    ...tools['简体中文'],
+    ...data['简体中文'],
+    ...emoji['简体中文'],
+  },
 };
 
 // Type exports
@@ -41,9 +41,9 @@ export const LANGUAGES = Object.keys(translations) as LanguageKey[];
 
 // Translation getter function
 export const getTranslation = (lang: string, key: TranslationKey): string => {
-    const dict =
-        translations[lang as keyof typeof translations] || translations['English'];
-    return dict[key] || translations['English'][key] || key;
+  const dict =
+    translations[lang as keyof typeof translations] || translations['English'];
+  return dict[key] || translations['English'][key] || key;
 };
 
 // Re-export individual modules for direct access

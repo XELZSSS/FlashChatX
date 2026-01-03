@@ -5,18 +5,18 @@
 
 // Thinking utilities
 export {
-    buildThinkingToggle,
-    buildThinkingBudgetToggle,
-    resolveThinkingLevel,
-    resolveThinkingBudget,
-    getThinkingBudget,
-    resolveOpenAIReasoningEffort,
+  buildThinkingToggle,
+  buildThinkingBudgetToggle,
+  resolveThinkingLevel,
+  resolveThinkingBudget,
+  getThinkingBudget,
+  resolveOpenAIReasoningEffort,
 } from './thinkingUtils';
 
 // Proxy utilities
 export {
-    withRetry,
-    fetchProxy,
-    postProxyJson,
-    requireApiKey,
+  withRetry,
+  fetchProxy,
+  postProxyJson,
+  requireApiKey,
 } from './proxyUtils';

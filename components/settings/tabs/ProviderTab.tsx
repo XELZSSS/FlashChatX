@@ -3,7 +3,7 @@ import React from 'react';
 // Icons
 import { Check, Trash2 } from 'lucide-react';
 // Types
-import type { ProviderConfig } from '../../../services/providerConfig';
+import type { ProviderConfig } from '../../../services/config/providerConfig';
 import type { ProviderType } from '../../../types';
 
 type ProviderOption = { id: ProviderType; label: string };

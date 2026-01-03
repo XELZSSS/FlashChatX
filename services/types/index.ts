@@ -4,12 +4,12 @@
  */
 
 export type {
-    OpenAIResponseReasoningDetail,
-    OpenAIResponseMessage,
-    OpenAIResponseChoice,
-    OpenAIResponse,
-    OpenAIProxyPayload,
-    OpenAIToolCall,
-    OpenAIStreamUsage,
-    AnthropicResponse,
+  OpenAIResponseReasoningDetail,
+  OpenAIResponseMessage,
+  OpenAIResponseChoice,
+  OpenAIResponse,
+  OpenAIProxyPayload,
+  OpenAIToolCall,
+  OpenAIStreamUsage,
+  AnthropicResponse,
 } from './streamTypes';

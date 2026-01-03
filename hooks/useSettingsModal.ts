@@ -7,8 +7,8 @@ import {
   saveProviderConfig,
   ProviderConfig,
   getProviderConfigForProvider,
-} from '../services/providerConfig';
-import { saveMemuConfig } from '../services/memuService';
+} from '../services/config/providerConfig';
+import { saveMemuConfig } from '../services/config/memuService';
 import {
   normalizeToolConfig,
   isProviderConfigEqual,

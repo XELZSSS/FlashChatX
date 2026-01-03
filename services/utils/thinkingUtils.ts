@@ -9,8 +9,8 @@ import { THINKING_BUDGETS } from '../../constants';
  * Budget to effort mapping for OpenAI reasoning
  */
 const OPENAI_BUDGET_TO_EFFORT = [
-    { max: 1024, effort: 'low' as ThinkingLevel },
-    { max: 4096, effort: 'medium' as ThinkingLevel },
+  { max: 1024, effort: 'low' as ThinkingLevel },
+  { max: 4096, effort: 'medium' as ThinkingLevel },
 ];
 
 /**
@@ -18,8 +18,8 @@ const OPENAI_BUDGET_TO_EFFORT = [
  * 构建思考开关选项
  */
 export const buildThinkingToggle = (useThinking: boolean) => {
-    const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
-    return { thinking: { type } };
+  const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
+  return { thinking: { type } };
 };
 
 /**
@@ -27,7 +27,7 @@ export const buildThinkingToggle = (useThinking: boolean) => {
  * 解析思考级别，默认为 medium
  */
 export const resolveThinkingLevel = (
-    thinkingLevel?: ThinkingLevel
+  thinkingLevel?: ThinkingLevel
 ): ThinkingLevel => thinkingLevel || 'medium';
 
 /**
@@ -35,13 +35,13 @@ export const resolveThinkingLevel = (
  * 从级别或自定义值解析思考预算
  */
 export const resolveThinkingBudget = (
-    thinkingLevel?: ThinkingLevel,
-    customBudget?: number
+  thinkingLevel?: ThinkingLevel,
+  customBudget?: number
 ): number => {
-    if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
-        return customBudget;
-    }
-    return THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
+  if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
+    return customBudget;
+  }
+  return THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
 };
 
 /**
@@ -49,25 +49,25 @@ export const resolveThinkingBudget = (
  * 获取指定级别的思考预算
  */
 export const getThinkingBudget = (thinkingLevel?: ThinkingLevel): number =>
-    THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
+  THINKING_BUDGETS[resolveThinkingLevel(thinkingLevel)];
 
 /**
  * Resolve OpenAI reasoning effort from thinking level or budget
  * 从思考级别或预算解析 OpenAI 推理努力程度
  */
 export const resolveOpenAIReasoningEffort = (
-    thinkingLevel?: ThinkingLevel,
-    customBudget?: number
+  thinkingLevel?: ThinkingLevel,
+  customBudget?: number
 ): ThinkingLevel => {
-    if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
-        for (const rule of OPENAI_BUDGET_TO_EFFORT) {
-            if (customBudget <= rule.max) {
-                return rule.effort;
-            }
-        }
-        return 'high';
+  if (typeof customBudget === 'number' && Number.isFinite(customBudget)) {
+    for (const rule of OPENAI_BUDGET_TO_EFFORT) {
+      if (customBudget <= rule.max) {
+        return rule.effort;
+      }
     }
-    return resolveThinkingLevel(thinkingLevel);
+    return 'high';
+  }
+  return resolveThinkingLevel(thinkingLevel);
 };
 
 /**
@@ -75,18 +75,18 @@ export const resolveOpenAIReasoningEffort = (
  * 构建带预算的思考开关选项
  */
 export const buildThinkingBudgetToggle = (
-    useThinking: boolean,
-    thinkingLevel?: ThinkingLevel,
-    customBudget?: number
+  useThinking: boolean,
+  thinkingLevel?: ThinkingLevel,
+  customBudget?: number
 ) => {
-    const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
-    if (!useThinking) {
-        return { thinking: { type } };
-    }
-    return {
-        thinking: {
-            type,
-            budget_tokens: resolveThinkingBudget(thinkingLevel, customBudget),
-        },
-    };
+  const type: 'enabled' | 'disabled' = useThinking ? 'enabled' : 'disabled';
+  if (!useThinking) {
+    return { thinking: { type } };
+  }
+  return {
+    thinking: {
+      type,
+      budget_tokens: resolveThinkingBudget(thinkingLevel, customBudget),
+    },
+  };
 };

@@ -3,9 +3,9 @@ import React from 'react';
 // Icons
 import { Check } from 'lucide-react';
 // Types
-import type { ProviderConfig } from '../../../services/providerConfig';
+import type { ProviderConfig } from '../../../services/config/providerConfig';
 import type { ToolChoiceMode } from '../../../types';
-import type { ToolDefinition } from '../../../services/toolRegistry';
+import type { ToolDefinition } from '../../../services/tools/toolRegistry';
 
 type ToolChoiceOption = { id: ToolChoiceMode; label: string };
 

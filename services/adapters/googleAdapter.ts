@@ -3,8 +3,8 @@ import {
   ServiceParams,
   UploadedFileReference,
 } from '../../types';
-import { buildInstructionText } from '../messageBuilder';
-import { resolveThinkingBudget } from '../serviceUtils';
+import { buildInstructionText } from '../pipeline/messageBuilder';
+import { resolveThinkingBudget } from '../pipeline/serviceUtils';
 import {
   GoogleAdapterConfig,
   GoogleAdapterResult,

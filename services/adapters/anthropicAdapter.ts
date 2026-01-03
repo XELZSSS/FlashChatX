@@ -1,6 +1,6 @@
 import { ServiceParams, UploadedFileReference } from '../../types';
-import { buildSystemMessages } from '../messageBuilder';
-import { resolveThinkingBudget } from '../serviceUtils';
+import { buildSystemMessages } from '../pipeline/messageBuilder';
+import { resolveThinkingBudget } from '../pipeline/serviceUtils';
 import {
   AnthropicAdapterConfig,
   AnthropicAdapterResult,

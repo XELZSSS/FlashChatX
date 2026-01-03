@@ -1,5 +1,5 @@
-import { ProviderConfig } from '../services/providerConfig';
-import { getDefaultToolConfig } from '../services/toolRegistry';
+import { ProviderConfig } from '../services/config/providerConfig';
+import { getDefaultToolConfig } from '../services/tools/toolRegistry';
 
 /**
  * Normalizes tool configuration to ensure consistent comparison

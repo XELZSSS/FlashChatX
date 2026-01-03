@@ -6,18 +6,11 @@ import React, {
   useState,
   useMemo,
 } from 'react';
-import {
-  ArrowUp,
-  Globe,
-  Brain,
-  AlertTriangle,
-  Paperclip,
-  Smile,
-} from 'lucide-react';
 import { ChatConfig, LocalAttachment } from '../types';
 import { useTranslation } from '../contexts/useTranslation';
 import InfoDialog from './InfoDialog';
-import { ToggleButton, AttachmentList } from './common';
+import { AttachmentList } from './common';
+import InputToolbar from './chat/InputToolbar';
 
 const EmojiPicker = React.lazy(() => import('./EmojiPicker'));
 
@@ -267,96 +260,24 @@ const InputArea: React.FC<InputAreaProps> = ({
           isUploading={isUploading}
         />
 
-        <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
-          <div className="flex items-center gap-2">
-            <ToggleButton
-              active={config.useThinking}
-              onClick={toggleThinking}
-              label={t('thinking')}
-              icon={Brain}
-            />
-
-            {config.useThinking && (
-              <div className="flex items-center gap-1.5 rounded-full border px-2 py-1 surface">
-                <div className="flex items-center gap-1">
-                  {thinkingLevels.map(level => {
-                    const isActive = config.thinkingLevel === level.id;
-                    return (
-                      <button
-                        key={level.id}
-                        type="button"
-                        onClick={() => setThinkingLevel(level.id)}
-                        className={`px-2 py-0.5 rounded-full text-xs font-medium transition-colors ${
-                          isActive
-                            ? 'bg-[var(--accent)] text-white'
-                            : 'text-subtle hover:text-[var(--text)]'
-                        }`}
-                      >
-                        {level.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            <ToggleButton
-              active={config.useSearch}
-              onClick={toggleSearch}
-              label={t('search')}
-              icon={Globe}
-              title={
-                config.useSearch ? 'Web search enabled' : 'Enable web search'
-              }
-            />
-
-            <ToggleButton
-              active={false}
-              onClick={openFilePicker}
-              label={t('uploadFile')}
-              icon={Paperclip}
-              disabled={isUploading}
-            />
-
-            {showEmojiButton && (
-              <ToggleButton
-                active={isEmojiOpen}
-                onClick={toggleEmojiPicker}
-                label={t('emojiButtonLabel')}
-                icon={Smile}
-              />
-            )}
-
-            <ToggleButton
-              active={false}
-              onClick={openInfoDialog}
-              label={t('projectInfo')}
-              icon={AlertTriangle}
-            />
-          </div>
-
-          <div className="flex items-center gap-3">
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="hidden"
-              multiple
-              accept=".txt,.md,.docx,.xlsx,.pdf,.png,.jpg,.jpeg,.bmp,.gif,.webp,.tif,.tiff"
-              onChange={handleFileSelect}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!canSend}
-              className={`send-btn w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
-                canSend
-                  ? 'bg-[var(--accent)] hover:bg-[var(--accent)] text-white'
-                  : 'bg-[var(--accent-soft)] text-white cursor-not-allowed'
-              }`}
-            >
-              <ArrowUp className="w-5 h-5" strokeWidth={2.5} />
-            </button>
-          </div>
-        </div>
+        <InputToolbar
+          t={t}
+          config={config}
+          thinkingLevels={thinkingLevels}
+          isEmojiOpen={isEmojiOpen}
+          showEmojiButton={showEmojiButton}
+          isUploading={isUploading}
+          canSend={canSend}
+          fileInputRef={fileInputRef}
+          onToggleThinking={toggleThinking}
+          onSetThinkingLevel={setThinkingLevel}
+          onToggleSearch={toggleSearch}
+          onOpenFilePicker={openFilePicker}
+          onToggleEmojiPicker={toggleEmojiPicker}
+          onOpenInfoDialog={openInfoDialog}
+          onFileSelect={handleFileSelect}
+          onSend={handleSend}
+        />
       </div>
 
       {/* Info Dialog */}

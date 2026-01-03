@@ -1,5 +1,8 @@
-import { buildFinalMessages, injectAttachmentPrompt } from '../messageBuilder';
-import { resolveThinkingBudget } from '../serviceUtils';
+import {
+  buildFinalMessages,
+  injectAttachmentPrompt,
+} from '../pipeline/messageBuilder';
+import { resolveThinkingBudget } from '../pipeline/serviceUtils';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 
 export const buildMinimaxAdapter = (

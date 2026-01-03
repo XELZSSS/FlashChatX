@@ -1,5 +1,8 @@
-import { buildFinalMessages, injectAttachmentPrompt } from '../messageBuilder';
-import { resolveOpenAIReasoningEffort } from '../serviceUtils';
+import {
+  buildFinalMessages,
+  injectAttachmentPrompt,
+} from '../pipeline/messageBuilder';
+import { resolveOpenAIReasoningEffort } from '../pipeline/serviceUtils';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 
 export const buildDeepseekAdapter = (

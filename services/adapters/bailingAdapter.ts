@@ -1,5 +1,8 @@
-import { buildFinalMessages, injectAttachmentPrompt } from '../messageBuilder';
-import { buildThinkingBudgetToggle } from '../serviceUtils';
+import {
+  buildFinalMessages,
+  injectAttachmentPrompt,
+} from '../pipeline/messageBuilder';
+import { buildThinkingBudgetToggle } from '../pipeline/serviceUtils';
 import { BAILING_MODELS } from '../../constants';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 

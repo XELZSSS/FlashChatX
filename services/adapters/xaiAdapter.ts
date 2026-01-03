@@ -1,7 +1,7 @@
 import {
   buildFinalOpenAIMessages,
   injectAttachmentPrompt,
-} from '../messageBuilder';
+} from '../pipeline/messageBuilder';
 import { OpenAIStyleAdapterContext, OpenAIStyleAdapterResult } from './types';
 
 export const buildXaiAdapter = (

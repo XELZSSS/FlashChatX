@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 // Components
 import Sidebar from './components/Sidebar';
 import ChatInterface from './components/ChatInterface';
@@ -10,26 +10,26 @@ import Toast from './components/Toast';
 import RenameDialog from './components/RenameDialog';
 // Services
 import { DEFAULT_SETTINGS, ANIMATION } from './constants';
-import { getJSON } from './app/appUtils';
 import { DEFAULT_CHAT_CONFIG } from './app/chatConstants';
-import { loadMemuConfig, type MemuConfig } from './services/memuService';
+import { loadMemuConfig, type MemuConfig } from './services/config/memuService';
 import { ChatSession, ChatConfig, ExtendedUserSettings } from './types';
+import { getJSON } from './utils/storage';
 // Hooks
-import { useAppDerivedState } from './app/hooks/useAppDerivedState';
-import { useAppSettings } from './app/hooks/useAppSettings';
-import { useHydration } from './app/hooks/useHydration';
-import { useChatActions } from './app/hooks/useChatActions';
-import { useChatImportExport } from './app/hooks/useChatImportExport';
-import { useChatStream } from './app/hooks/useChatStream';
-import { useSendMessage } from './app/hooks/useSendMessage';
-import { useSessionPersistence } from './app/hooks/useSessionPersistence';
-import { useSessions } from './app/hooks/useSessions';
-import { useSyncRefs } from './app/hooks/useSyncRefs';
-import { useToasts } from './app/hooks/useToasts';
-import { useMessageMutations } from './app/hooks/useMessageMutations';
-import { useUiState } from './app/hooks/useUiState';
-import { useUiHandlers } from './app/hooks/useUiHandlers';
-import { useAttachments } from './app/hooks/useAttachments';
+import { useAppDerivedState } from './app/hooks/chat/useAppDerivedState';
+import { useChatStream } from './app/hooks/chat/useChatStream';
+import { useSendMessage } from './app/hooks/chat/useSendMessage';
+import { useMessageMutations } from './app/hooks/chat/useMessageMutations';
+import { useAttachments } from './app/hooks/chat/useAttachments';
+import { useSessions } from './app/hooks/session/useSessions';
+import { useHydration } from './app/hooks/session/useHydration';
+import { useChatActions } from './app/hooks/session/useChatActions';
+import { useChatImportExport } from './app/hooks/session/useChatImportExport';
+import { useSessionPersistence } from './app/hooks/session/useSessionPersistence';
+import { useToasts } from './app/hooks/ui/useToasts';
+import { useUiState } from './app/hooks/ui/useUiState';
+import { useUiHandlers } from './app/hooks/ui/useUiHandlers';
+import { useAppSettings } from './app/hooks/app/useAppSettings';
+import { useSyncRefs } from './app/hooks/app/useSyncRefs';
 // Contexts
 import { LanguageProvider } from './contexts/LanguageContext';
 import { useTranslation } from './contexts/useTranslation';
@@ -251,21 +251,6 @@ const AppContent: React.FC<{
     setSessionsWithRef,
   });
 
-  // Rename dialog handlers
-  const handleRenameDialogConfirm = useCallback(
-    (title: string) => {
-      if (renameSessionId) {
-        updateSessionTitle(renameSessionId, title);
-      }
-      setIsRenameDialogOpen(false);
-    },
-    [renameSessionId, updateSessionTitle, setIsRenameDialogOpen]
-  );
-
-  const handleRenameDialogCancel = useCallback(() => {
-    setIsRenameDialogOpen(false);
-  }, [setIsRenameDialogOpen]);
-
   const chatTransitionLockUntilRef = useRef(0);
   const previousShowWelcomeRef = useRef(showWelcome);
 
@@ -274,7 +259,8 @@ const AppContent: React.FC<{
     if (showWelcome) {
       chatTransitionLockUntilRef.current = 0;
     } else if (wasWelcome) {
-      chatTransitionLockUntilRef.current = Date.now() + ANIMATION.CHAT_TRANSITION_LOCK_MS;
+      chatTransitionLockUntilRef.current =
+        Date.now() + ANIMATION.CHAT_TRANSITION_LOCK_MS;
     }
     previousShowWelcomeRef.current = showWelcome;
   }, [showWelcome]);
@@ -398,9 +384,11 @@ const AppContent: React.FC<{
 
       <RenameDialog
         isOpen={isRenameDialogOpen}
-        initialTitle={newTitle}
-        onConfirm={handleRenameDialogConfirm}
-        onCancel={handleRenameDialogCancel}
+        title={newTitle}
+        onTitleChange={onRenameInputChange}
+        onKeyDown={onRenameKeyDown}
+        onConfirm={onRenameConfirm}
+        onCancel={onRenameCancel}
       />
     </div>
   );
